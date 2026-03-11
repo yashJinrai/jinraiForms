@@ -3,7 +3,9 @@ import Lottie from "lottie-react";
 import { useRef } from "react";
 import googleLogo from "../../assets/icons/googleLogo.json";
 
-const GoogleButton = ({ onClick }) => {
+import { BASE_URL } from "../../lib/utils";
+
+const GoogleButton = ({ text = "Continue with Google" }) => {
     const lottieRef = useRef();
 
     const handleMouseEnter = () => {
@@ -14,12 +16,17 @@ const GoogleButton = ({ onClick }) => {
         lottieRef.current?.stop();
     };
 
+    const handleGoogleAuth = () => {
+        // Redirect to Backend Google Auth Endpoint
+        window.location.href = `${BASE_URL}/api/v1/jinraiForm/auth/google`;
+    };
+
     return (
         <Button
             type="button"
             variant="secondary"
             className="w-full gap-3"
-            onClick={onClick}
+            onClick={handleGoogleAuth}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
         >
@@ -31,7 +38,7 @@ const GoogleButton = ({ onClick }) => {
                     autoplay={true}
                 />
             </div>
-            <span className="font-bold">Sign up with Google</span>
+            <span className="font-bold">{text}</span>
         </Button>
     );
 };

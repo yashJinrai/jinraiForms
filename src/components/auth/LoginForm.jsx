@@ -1,23 +1,40 @@
-import { useState } from 'react'
-import { Button, Input, Divider, Checkbox } from '../ui'
-import { LuEye, LuEyeClosed } from "react-icons/lu";
-import { useRef } from "react";
-import Lottie from "lottie-react";
-import arrowForward from "../../assets/icons/arrow_forward.json";
+import { useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Button, Input, Divider } from '../ui'
+import Lottie from "lottie-react"
+import GoogleButton from './GoogleButton'
+import arrowForward from "../../assets/icons/arrow_forward.json"
+import { login } from '../../lib/auth'
 
 const LoginForm = () => {
+    const navigate = useNavigate()
     const [formData, setFormData] = useState({
         email: '',
         password: '',
         remember: false
     })
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState('')
 
-    const [showPassword, setShowPassword] = useState(false)
-
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
-        console.log('Login:', formData)
-        // Integrate with your Express auth API
+        setLoading(true)
+        setError('')
+        try {
+            const data = await login({
+                email: formData.email,
+                password: formData.password
+            })
+            console.log('Login successful:', data)
+            // Save token/user to local storage or state management if needed
+            // For now, let's just redirect to a dashboard or home
+            navigate('/dashboard')
+        } catch (err) {
+            setError(err.message || 'Login failed. Please check your credentials.')
+            console.error('Login error:', err)
+        } finally {
+            setLoading(false)
+        }
     }
 
     const lottieRef = useRef();
@@ -31,68 +48,72 @@ const LoginForm = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email */}
+        <form onSubmit={handleSubmit} className="space-y-3">
+            <GoogleButton text="Sign in with Google" />
+
+            <Divider>Login with email</Divider>
+
+            {error && (
+                <div className="p-3 text-sm text-red-500 bg-red-100 border border-red-200 rounded-lg animate-shake">
+                    {error}
+                </div>
+            )}
+
+            {/* Email and forgot password link*/}
             <div>
                 <Input
                     label="Email Address"
                     id="email"
                     type="email"
-                    placeholder="alex@company.com"
+                    placeholder="name@company.com"
+                    required
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
                 <div className="flex justify-end mt-1">
-                    <a href="#" className="text-sm font-semibold text-[#3713EC] hover:text-[#2911A0] transition-colors">
+                    <a href="/forgot-password" className="text-sm font-semibold text-[#3713EC] hover:text-[#2911A0] transition-colors">
                         Forgot password?
                     </a>
                 </div>
             </div>
 
-            {/* Password with forgot link */}
+            {/* Password*/}
             <Input
                 label="Password"
                 id="password"
-                type={showPassword ? "text" : "password"}
+                type="password"
                 placeholder="••••••••"
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                iconAfter={
-                    <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="flex items-center justify-center focus:outline-none cursor-pointer"
-                    >
-                        <span className="material-symbols-outlined text-[20px] select-none">
-                            {showPassword ? <LuEye /> : <LuEyeClosed />}
-                        </span>
-                    </button>
-                }
-            />
-
-            {/* Remember me */}
-            <Checkbox
-                id="remember"
-                label="Remember for 30 days"
-                checked={formData.remember}
-                onChange={(e) => setFormData({ ...formData, remember: e.target.checked })}
             />
 
             {/* Submit */}
-            <Button type="submit" variant="primary" className="w-full py-3 gap-5" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-                <span className='font-semibold text-lg'>Sign In</span>
-                <span className="material-symbols-outlined text-[18px]">
-                    <div className="w-10 h-5 flex items-center ">
-                        <Lottie
-                            lottieRef={lottieRef}
-                            animationData={arrowForward}
-                            loop={false}
-                            autoplay={true}
-                        />
-                    </div>
-                </span>
-            </Button>
+            <div className='pt-2'>
+                <Button
+                    type="submit"
+                    className="w-full gap-5 py-3"
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                    disabled={loading}
+                >
+                    <span className='font-semibold text-lg'>
+                        {loading ? 'Signing In...' : 'Sign In'}
+                    </span>
+                    {!loading && (
+                        <span className="material-symbols-outlined text-[18px]">
+                            <div className="w-10 h-5 flex items-center ">
+                                <Lottie
+                                    lottieRef={lottieRef}
+                                    animationData={arrowForward}
+                                    loop={false}
+                                    autoplay={true}
+                                />
+                            </div>
+                        </span>
+                    )}
+                </Button>
+            </div>
         </form>
     )
 }

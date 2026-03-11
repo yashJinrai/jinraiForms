@@ -8,9 +8,9 @@ import { SiGoogleanalytics } from "react-icons/si";
 
 const Login = () => {
     return (
-        <div className="flex h-screen min-h-screen max-w-full mx-auto">
+        <div className="flex h-screen min-h-screen max-w-full">
             {/* Left Side: Form */}
-            <div className="flex flex-col justify-center items-center w-full lg:w-1/2 p-8 md:p-16 bg-white">
+            <div className="flex flex-col justify-center items-center w-full lg:w-1/2 p-8 md:p-16">
                 <div className="w-full max-w-md">
                     {/* Logo */}
                     <div className="flex items-center gap-2 mb-10">
@@ -22,25 +22,20 @@ const Login = () => {
 
                     {/* Welcome */}
                     <div className="mb-8">
-                        <h1 className="text-3xl font-extrabold text-[#0F172A] mb-2">Welcome back</h1>
+                        <h1 className="text-[#0F172A] text-3xl font-extrabold tracking-tight mb-2">Welcome back</h1>
                         <p className="text-[#64748B]">Please enter your details to sign in to your account.</p>
                     </div>
-
-                    {/* Google */}
-                    <div className="flex flex-col gap-3 mb-8">
-                        <GoogleButton />
-                    </div>
-
-                    <Divider>or email</Divider>
 
                     {/* Form */}
                     <LoginForm />
 
                     {/* Signup link */}
-                    <p className="mt-8 text-center text-slate-600 dark:text-slate-400">
-                        Don't have an account?{' '}
-                        <a href="/" className="text-primary font-bold hover:underline">Create an account</a>
-                    </p>
+                    <div className="mt-4 text-center">
+                        <p className="text-[#475569] text-sm font-regular">
+                            Don't have an account?{' '}
+                            <a href="/" className="text-[#3713EC] font-bold hover:underline ml-1 transition-all">Create an account</a>
+                        </p>
+                    </div>
                 </div>
             </div>
 

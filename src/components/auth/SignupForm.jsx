@@ -1,23 +1,48 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Button, Input, Divider, Checkbox } from '../ui'
 import GoogleButton from './GoogleButton'
-import Lottie from "lottie-react";
-import { useRef } from "react";
-import { LuEye, LuEyeClosed } from "react-icons/lu";
-import arrowForward from "../../assets/icons/arrow_forward.json";
+import Lottie from "lottie-react"
+import arrowForward from "../../assets/icons/arrow_forward.json"
+import { register } from '../../lib/auth'
 
 const SignupForm = () => {
+    const navigate = useNavigate()
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         password: '',
         terms: false
     })
-    const [showPassword, setShowPassword] = useState(false)
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState('')
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
-        console.log('Signup:', formData)
+
+        if (!formData.terms) {
+            setError('You must agree to the Terms and Conditions')
+            return
+        }
+
+        setLoading(true)
+        setError('')
+        try {
+            const data = await register({
+                name: formData.name,
+                email: formData.email,
+                password: formData.password,
+                role: 'user'
+            })
+            console.log('Signup successful:', data)
+            // Automatically log in or redirect to login
+            navigate('/login')
+        } catch (err) {
+            setError(err.message || 'Signup failed. Please try again.')
+            console.error('Signup error:', err)
+        } finally {
+            setLoading(false)
+        }
     }
 
     const lottieRef = useRef();
@@ -32,10 +57,17 @@ const SignupForm = () => {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-3">
-            <GoogleButton />
+            <GoogleButton text="Sign up with Google" />
 
             <Divider>Or continue with email</Divider>
 
+            {error && (
+                <div className="p-3 text-sm text-red-500 bg-red-100 border border-red-200 rounded-lg animate-shake">
+                    {error}
+                </div>
+            )}
+
+            {/* Name */}
             <Input
                 label="Full Name"
                 id="name"
@@ -46,7 +78,7 @@ const SignupForm = () => {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
-
+            {/* Email */}
             <Input
                 label="Email Address"
                 id="email"
@@ -57,27 +89,16 @@ const SignupForm = () => {
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             />
-
+            {/* Password */}
             <Input
                 label="Password"
                 id="password"
                 name="password"
-                type={showPassword ? "text" : "password"}
+                type="password"
                 placeholder="Min. 8 characters"
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                iconAfter={
-                    <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="flex items-center justify-center focus:outline-none cursor-pointer"
-                    >
-                        <span className="material-symbols-outlined text-[20px] select-none">
-                            {showPassword ? <LuEye /> : <LuEyeClosed />}
-                        </span>
-                    </button>
-                }
             />
 
             <Checkbox
@@ -94,19 +115,30 @@ const SignupForm = () => {
                 onChange={(e) => setFormData({ ...formData, terms: e.target.checked })}
             />
 
+            {/* Submit */}
             <div className="pt-2">
-                <Button type="submit" className="w-full gap-5 py-3" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-                    <span className='font-semibold text-lg'>Create Account</span>
-                    <span className="material-symbols-outlined text-[18px]">
-                        <div className="w-10 h-5 flex items-center ">
-                            <Lottie
-                                lottieRef={lottieRef}
-                                animationData={arrowForward}
-                                loop={false}
-                                autoplay={true}
-                            />
-                        </div>
+                <Button
+                    type="submit"
+                    className="w-full gap-5 py-3"
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                    disabled={loading}
+                >
+                    <span className='font-semibold text-lg'>
+                        {loading ? 'Creating Account...' : 'Create Account'}
                     </span>
+                    {!loading && (
+                        <span className="material-symbols-outlined text-[18px]">
+                            <div className="w-10 h-5 flex items-center ">
+                                <Lottie
+                                    lottieRef={lottieRef}
+                                    animationData={arrowForward}
+                                    loop={false}
+                                    autoplay={true}
+                                />
+                            </div>
+                        </span>
+                    )}
                 </Button>
             </div>
         </form>
