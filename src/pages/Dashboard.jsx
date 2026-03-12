@@ -92,7 +92,7 @@ const Dashboard = () => {
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="space-y-1">
-                        <h1 className="text-4xl font-black text-slate-900 tracking-tight">Form Dashboard</h1>
+                        <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Form Dashboard</h1>
                         <p className="text-slate-500 font-bold text-sm tracking-wide">Manage your active forms and analyze responses.</p>
                     </div>
                     <button

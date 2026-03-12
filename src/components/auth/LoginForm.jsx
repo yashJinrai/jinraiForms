@@ -4,10 +4,12 @@ import { Button, Input, Divider } from '../ui'
 import Lottie from "lottie-react"
 import GoogleButton from './GoogleButton'
 import arrowForward from "../../assets/icons/arrow_forward.json"
-import { login } from '../../lib/auth'
+import { login as loginApi } from '../../lib/auth'
+import { useAuth } from '../../hooks/useAuth'
 
 const LoginForm = () => {
     const navigate = useNavigate()
+    const { login } = useAuth()
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -21,13 +23,12 @@ const LoginForm = () => {
         setLoading(true)
         setError('')
         try {
-            const data = await login({
+            const data = await loginApi({
                 email: formData.email,
                 password: formData.password
             })
             console.log('Login successful:', data)
-            // Save token/user to local storage or state management if needed
-            // For now, let's just redirect to a dashboard or home
+            login(data) // Update global auth state
             navigate('/dashboard')
         } catch (err) {
             setError(err.message || 'Login failed. Please check your credentials.')

@@ -44,3 +44,20 @@ export const resetPassword = async (email, newPassword) => {
         throw error.response?.data || error.message;
     }
 };
+export const validateUser = async () => {
+    try {
+        const response = await api.get('/auth/valid_user');
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || error.message;
+    }
+};
+
+export const logout = async () => {
+    try {
+        const response = await api.get('/auth/logout');
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || error.message;
+    }
+};
