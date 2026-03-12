@@ -22,6 +22,10 @@ const Dashboard = () => {
     const [recentForms, setRecentForms] = useState([]);
     const [loading, setLoading] = useState(true);
     const [totalActive, setTotalActive] = useState(0);
+    const [statsData, setStatsData] = useState({
+        totalResponses: '0',
+        avgCompletionRate: '0%'
+    });
 
     const gradients = [
         'from-sky-50 via-blue-50 to-indigo-100',
@@ -35,8 +39,13 @@ const Dashboard = () => {
         const fetchDashboardData = async () => {
             try {
                 setLoading(true);
-                const res = await api.get('/forms');
-                const forms = res.data.data || [];
+                const [formsRes, statsRes] = await Promise.all([
+                    api.get('/forms'),
+                    api.get('/forms/stats')
+                ]);
+
+                const forms = formsRes.data.data || [];
+                const stats = statsRes.data.data || {};
 
                 // Map the forms
                 const mappedForms = forms.slice(0, 4).map((f, i) => ({
@@ -51,7 +60,11 @@ const Dashboard = () => {
                 }));
 
                 setRecentForms(mappedForms);
-                setTotalActive(forms.filter(f => f.status === 'Active').length);
+                setTotalActive(stats.activeForms || 0);
+                setStatsData({
+                    totalResponses: (stats.totalResponses || 0).toLocaleString(),
+                    avgCompletionRate: stats.avgCompletionRate || '0%'
+                });
             } catch (error) {
                 console.error("Dashboard data fetch error", error);
             } finally {
@@ -72,14 +85,14 @@ const Dashboard = () => {
         },
         {
             title: 'Total Responses',
-            value: '0',
+            value: statsData.totalResponses,
             icon: <Send size={22} />,
             trend: '+0%',
             color: 'text-purple-600 bg-purple-50'
         },
         {
             title: 'Avg. Completion Rate',
-            value: '0%',
+            value: statsData.avgCompletionRate,
             icon: <Zap size={22} />,
             trend: '0%',
             color: 'text-amber-600 bg-amber-50'

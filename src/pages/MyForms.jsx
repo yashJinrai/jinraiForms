@@ -24,7 +24,7 @@ const statusConfig = {
     Archived: { label: 'ARCHIVED', className: 'bg-amber-100 text-amber-600' },
 };
 
-const FormCard = ({ form, onEdit, onDelete }) => {
+const FormCard = ({ form, onEdit, onDelete, onDuplicate }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const cfg = statusConfig[form.status] || statusConfig['Draft'];
     const isDraft = form.status === 'Draft';
@@ -55,42 +55,19 @@ const FormCard = ({ form, onEdit, onDelete }) => {
                         <p className="text-2xl font-black text-slate-900">{(form.responsesCount || 0).toLocaleString()}</p>
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Responses</p>
                     </div>
-                    {/* Collaborator avatars */}
-                    {form.collaborators && form.collaborators.length > 0 ? (
-                        <div className="flex -space-x-2">
-                            {form.collaborators.map((c, i) => (
-                                <div
-                                    key={i}
-                                    className={`w-7 h-7 rounded-full border-2 border-white flex items-center justify-center text-[9px] font-black text-white ${form.collaboratorColors[i] || 'bg-slate-400'}`}
-                                >
-                                    {c}
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <button className="p-1.5 text-slate-300 hover:text-slate-500 transition-colors">
-                            <Edit2 size={15} />
-                        </button>
-                    )}
+                    <button className="p-1.5 text-slate-300 hover:text-slate-500 transition-colors">
+                        <Edit2 size={15} />
+                    </button>
                 </div>
 
                 {/* Actions */}
                 <div className="flex items-center gap-2 pt-3 border-t border-slate-50">
-                    {isDraft ? (
-                        <button
-                            onClick={() => onEdit(form._id)}
-                            className="flex-1 py-2 bg-[#3713ec] text-white text-[12px] font-black rounded-xl hover:bg-[#2a0fd4] transition-all"
-                        >
-                            Continue Editing
-                        </button>
-                    ) : (
-                        <button
-                            onClick={() => onEdit(form._id)}
-                            className="flex-1 py-2 bg-[#3713ec] text-white text-[12px] font-black rounded-xl hover:bg-[#2a0fd4] transition-all flex items-center justify-center gap-1.5"
-                        >
-                            <Edit2 size={13} /> Edit
-                        </button>
-                    )}
+                    <button
+                        onClick={() => onEdit(form._id)}
+                        className="flex-1 py-2 bg-[#3713ec] text-white text-[12px] font-black rounded-xl hover:bg-[#2a0fd4] transition-all flex items-center justify-center gap-1.5"
+                    >
+                        <Edit2 size={13} /> {isDraft ? 'Continue' : 'Edit'}
+                    </button>
                     <button className="p-2 bg-slate-50 text-slate-500 hover:bg-slate-100 rounded-xl transition-all">
                         <Share2 size={15} />
                     </button>
@@ -104,7 +81,11 @@ const FormCard = ({ form, onEdit, onDelete }) => {
                         </button>
                         {menuOpen && (
                             <div className="absolute right-0 bottom-10 bg-white border border-slate-100 rounded-2xl shadow-2xl shadow-slate-200/80 py-2 w-44 z-50">
-                                <MenuItem icon={<Copy size={14} />} label="Duplicate" />
+                                <MenuItem 
+                                    icon={<Copy size={14} />} 
+                                    label="Duplicate" 
+                                    onClick={() => { onDuplicate(form._id); setMenuOpen(false); }}
+                                />
                                 <MenuItem
                                     icon={<ExternalLink size={14} />}
                                     label="View Live"
@@ -190,6 +171,21 @@ const MyForms = () => {
         return matchesTab && matchesSearch;
     });
 
+    const handleDuplicate = async (id) => {
+        try {
+            const res = await api.post(`/forms/${id}/duplicate`);
+            if (res.data.success) {
+                const newForm = {
+                    ...res.data.data,
+                    bgGradient: GRADIENTS[forms.length % GRADIENTS.length]
+                };
+                setForms(prev => [newForm, ...prev]);
+            }
+        } catch (error) {
+            console.error("Failed to duplicate form", error);
+        }
+    };
+
     const handleDelete = async (id) => {
         try {
             await api.delete(`/forms/${id}`);
@@ -247,7 +243,7 @@ const MyForms = () => {
                     <>
                         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                             {filtered.map(form => (
-                                <FormCard key={form._id} form={form} onEdit={handleEdit} onDelete={handleDelete} />
+                                <FormCard key={form._id} form={form} onEdit={handleEdit} onDelete={handleDelete} onDuplicate={handleDuplicate} />
                             ))}
                             <NewFormCard onCreate={handleCreate} />
                         </div>
