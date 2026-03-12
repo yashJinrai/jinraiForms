@@ -8,6 +8,15 @@
   font-family: 'Inter', sans-serif;
 }
 
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
 .bg-mesh {
   background-color: #3713ec;
   background-image:

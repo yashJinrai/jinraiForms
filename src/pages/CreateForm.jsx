@@ -5,7 +5,10 @@ import {
     Type, AlignLeft, CheckSquare, Circle, ChevronDown,
     Upload, Calendar, Star, Mail, Plus, Zap, Eye, Send,
     Trash2, GripVertical, ChevronRight, Settings, Globe,
-    ToggleRight, Bell, Check, X, ArrowLeft, Save, Share2
+    ToggleRight, Bell, Check, X, ArrowLeft, Save, Share2,
+    Clock, Sliders, Palette, Image, Youtube, Maximize2,
+    Bold, Italic, Underline, Link as LinkIcon, List as ListIcon,
+    AlignCenter, AlignRight
 } from 'lucide-react';
 
 /* ───────────────────────── Field palette ───────────────────────── */
@@ -20,8 +23,18 @@ const BASIC_FIELDS = [
 const ADVANCED_FIELDS = [
     { type: 'file_upload', label: 'File Upload', icon: <Upload size={16} /> },
     { type: 'date_picker', label: 'Date Picker', icon: <Calendar size={16} /> },
+    { type: 'time_picker', label: 'Time Picker', icon: <Clock size={16} /> },
     { type: 'rating', label: 'Rating', icon: <Star size={16} /> },
+    { type: 'linear_scale', label: 'Linear Scale', icon: <Maximize2 size={16} /> },
+    { type: 'slider', label: 'Range Slider', icon: <Sliders size={16} /> },
+    { type: 'color_picker', label: 'Color Picker', icon: <Palette size={16} /> },
     { type: 'email', label: 'Email', icon: <Mail size={16} /> },
+];
+
+const CONTENT_FIELDS = [
+    { type: 'image', label: 'Image', icon: <Image size={16} /> },
+    { type: 'video', label: 'Video (YouTube)', icon: <Youtube size={16} /> },
+    { type: 'bullet_list', label: 'Bullet List', icon: <ListIcon size={16} /> },
 ];
 
 /* ───────────────────────── Field renderers ───────────────────────── */
@@ -38,7 +51,15 @@ const FieldPreview = ({ field, isSelected, onSelect, onDelete, themeColor }) => 
                 return (
                     <div className="space-y-2">
                         {(field.options || ['Option 1', 'Option 2', 'Option 3']).map((o, i) => (
-                            <label key={i} className="flex items-center gap-2.5 text-sm text-slate-500">
+                            <label 
+                                key={i} 
+                                className="flex items-center gap-2.5 text-sm"
+                                style={{
+                                    fontSize: field.optionStyle?.fontSize || '14px',
+                                    fontWeight: field.optionStyle?.fontWeight || '500',
+                                    color: field.optionStyle?.color || '#64748b'
+                                }}
+                            >
                                 <div className="w-4 h-4 rounded-full border-2 border-slate-300 flex-shrink-0" />
                                 {o}
                             </label>
@@ -49,7 +70,15 @@ const FieldPreview = ({ field, isSelected, onSelect, onDelete, themeColor }) => 
                 return (
                     <div className="space-y-2">
                         {(field.options || ['Option 1', 'Option 2']).map((o, i) => (
-                            <label key={i} className="flex items-center gap-2.5 text-sm text-slate-500">
+                            <label 
+                                key={i} 
+                                className="flex items-center gap-2.5 text-sm"
+                                style={{
+                                    fontSize: field.optionStyle?.fontSize || '14px',
+                                    fontWeight: field.optionStyle?.fontWeight || '500',
+                                    color: field.optionStyle?.color || '#64748b'
+                                }}
+                            >
                                 <div className="w-4 h-4 rounded border-2 border-slate-300 flex-shrink-0" />
                                 {o}
                             </label>
@@ -59,7 +88,7 @@ const FieldPreview = ({ field, isSelected, onSelect, onDelete, themeColor }) => 
             case 'dropdown':
                 return (
                     <div className={`${baseInput} flex items-center justify-between`}>
-                        <span>Select an option</span>
+                        <span style={{ color: field.optionStyle?.color }}>Select an option</span>
                         <ChevronDown size={14} className="text-slate-400" />
                     </div>
                 );
@@ -82,6 +111,92 @@ const FieldPreview = ({ field, isSelected, onSelect, onDelete, themeColor }) => 
                 );
             case 'email':
                 return <input className={baseInput} placeholder="example@email.com" readOnly />;
+            case 'time_picker':
+                return <input type="text" className={baseInput} placeholder="00 : 00 AM" readOnly />;
+            case 'color_picker':
+                return (
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl border border-slate-200 bg-slate-100" />
+                        <span className="text-sm text-slate-400">Choose a color</span>
+                    </div>
+                );
+            case 'linear_scale':
+                return (
+                    <div className="flex items-center justify-between gap-4 py-2">
+                        <span className="text-[10px] font-black text-slate-400">{field.minLabel || 'Min'}</span>
+                        <div className="flex-1 flex justify-between px-4">
+                            {[1, 2, 3, 4, 5].map(v => (
+                                <div key={v} className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-400">{v}</div>
+                            ))}
+                        </div>
+                        <span className="text-[10px] font-black text-slate-400">{field.maxLabel || 'Max'}</span>
+                    </div>
+                );
+            case 'slider':
+                return (
+                    <div className="py-4">
+                        <div className="h-2 w-full bg-slate-100 rounded-full relative">
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white border-2 border-slate-300 shadow-sm" />
+                        </div>
+                        <div className="flex justify-between mt-2 text-[10px] font-bold text-slate-400">
+                            <span>{field.min || 0}</span>
+                            <span>{field.max || 100}</span>
+                        </div>
+                    </div>
+                );
+            case 'image':
+                return (
+                    <div className="w-full h-40 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-slate-300 overflow-hidden">
+                        {field.imageUrl ? (
+                            <img src={field.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                        ) : (
+                            <>
+                                <Image size={24} className="mb-2" />
+                                <span className="text-[10px] font-bold">IMAGE CONTENT</span>
+                            </>
+                        )}
+                    </div>
+                );
+            case 'video':
+                const videoId = field.videoUrl ? (field.videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/) || [])[2] : null;
+
+                return (
+                    <div className="w-full rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 group/vid relative aspect-video flex flex-col items-center justify-center">
+                        {videoId && videoId.length === 11 ? (
+                            <iframe
+                                width="100%"
+                                height="100%"
+                                src={`https://www.youtube.com/embed/${videoId}`}
+                                title="YouTube video player"
+                                frameBorder="0"
+                                className="pointer-events-none"
+                            ></iframe>
+                        ) : (
+                            <>
+                                <Youtube size={32} className="mb-2 text-slate-700" />
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">YouTube Video Preview</span>
+                            </>
+                        )}
+                    </div>
+                );
+            case 'bullet_list':
+                return (
+                    <ul className="space-y-2 list-disc pl-5">
+                        {(field.options || ['Item 1', 'Item 2']).map((o, i) => (
+                            <li 
+                                key={i} 
+                                className="text-sm"
+                                style={{
+                                    fontSize: field.optionStyle?.fontSize || '14px',
+                                    fontWeight: field.optionStyle?.fontWeight || '500',
+                                    color: field.optionStyle?.color || '#64748b'
+                                }}
+                            >
+                                {o}
+                            </li>
+                        ))}
+                    </ul>
+                );
             default:
                 return <input className={baseInput} placeholder="Answer" readOnly />;
         }
@@ -103,8 +218,21 @@ const FieldPreview = ({ field, isSelected, onSelect, onDelete, themeColor }) => 
             </div>
 
             <div className="p-5 pl-10">
-                <div className="flex items-start justify-between gap-2 mb-3">
-                    <p className="font-bold text-slate-800 text-[14px] leading-snug">{field.label}</p>
+                <div className="flex items-start justify-between gap-2 mb-1">
+                    <p 
+                        className="font-bold text-slate-800 text-[14px] leading-snug flex-1"
+                        style={{
+                            fontSize: field.style?.fontSize || '14px',
+                            fontWeight: field.style?.fontWeight === 'black' ? 900 : field.style?.fontWeight || 'bold',
+                            color: field.style?.color || '#1e293b',
+                            textAlign: field.style?.textAlign || 'left',
+                            fontStyle: field.style?.fontStyle || 'normal',
+                            textDecoration: field.style?.textDecoration || 'none',
+                            fontFamily: field.style?.fontFamily || 'inherit',
+                        }}
+                    >
+                        {field.label}
+                    </p>
                     <button
                         onClick={e => { e.stopPropagation(); onDelete(); }}
                         className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-slate-300 hover:text-red-500 rounded-lg"
@@ -112,6 +240,21 @@ const FieldPreview = ({ field, isSelected, onSelect, onDelete, themeColor }) => 
                         <Trash2 size={14} />
                     </button>
                 </div>
+                {field.description && (
+                    <p 
+                        className="mb-3 leading-relaxed"
+                        style={{ 
+                            textAlign: field.descriptionStyle?.textAlign || field.style?.textAlign || 'left',
+                            fontSize: field.descriptionStyle?.fontSize || '11px',
+                            color: field.descriptionStyle?.color || '#94a3b8',
+                            fontStyle: field.descriptionStyle?.fontStyle || 'normal',
+                            textDecoration: field.descriptionStyle?.textDecoration || 'none',
+                            fontFamily: field.descriptionStyle?.fontFamily || field.style?.fontFamily || 'inherit',
+                        }}
+                    >
+                        {field.description}
+                    </p>
+                )}
                 {renderInput()}
             </div>
 
@@ -122,9 +265,137 @@ const FieldPreview = ({ field, isSelected, onSelect, onDelete, themeColor }) => 
     );
 };
 
+/* ───────────────────────── Style Toolbar ───────────────────────── */
+const StyleToolbar = ({ style, onChange, showLink = false, linkValue = '', onLinkChange }) => (
+    <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-2">
+            <div>
+                <p className="text-[9px] font-black text-slate-300 mb-1">FONT SIZE</p>
+                <select
+                    value={style?.fontSize || '14px'}
+                    onChange={e => onChange({ ...style, fontSize: e.target.value })}
+                    className="w-full border border-slate-100 rounded-lg px-2 py-1.5 text-[11px] font-bold text-slate-600 outline-none"
+                >
+                    <option value="12px">XS</option>
+                    <option value="14px">Base</option>
+                    <option value="18px">MD</option>
+                    <option value="24px">LG</option>
+                    <option value="32px">XL</option>
+                    <option value="48px">2XL</option>
+                </select>
+            </div>
+            <div>
+                <p className="text-[9px] font-black text-slate-300 mb-1">FONT FAMILY</p>
+                <select
+                    value={style?.fontFamily || 'Inter'}
+                    onChange={e => onChange({ ...style, fontFamily: e.target.value })}
+                    className="w-full border border-slate-100 rounded-lg px-2 py-1.5 text-[11px] font-bold text-slate-600 outline-none"
+                >
+                    <option value="Inter, sans-serif">Inter</option>
+                    <option value="'Roboto', sans-serif">Roboto</option>
+                    <option value="'Playfair Display', serif">Playfair</option>
+                    <option value="'Fira Code', monospace">Mono</option>
+                    <option value="'Outfit', sans-serif">Outfit</option>
+                </select>
+            </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+            <div>
+                <p className="text-[9px] font-black text-slate-300 mb-1">ALIGNMENT</p>
+                <div className="flex bg-slate-50 rounded-lg p-0.5">
+                    {['left', 'center', 'right'].map(align => (
+                        <button
+                            key={align}
+                            onClick={() => onChange({ ...style, textAlign: align })}
+                            className={`flex-1 py-1 rounded-md flex items-center justify-center transition-all ${style?.textAlign === align ? 'bg-white shadow-sm text-[#3713ec]' : 'text-slate-300 hover:text-slate-500'}`}
+                        >
+                            {align === 'left' ? <AlignLeft size={12} /> : align === 'center' ? <AlignCenter size={12} /> : <AlignRight size={12} />}
+                        </button>
+                    ))}
+                </div>
+            </div>
+            <div />
+        </div>
+
+        <div className="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-xl">
+            <button
+                onClick={() => onChange({ ...style, fontWeight: style?.fontWeight === 'bold' ? 'normal' : 'bold' })}
+                className={`p-2 rounded-lg transition-all ${style?.fontWeight === 'bold' || style?.fontWeight === '900' ? 'bg-white shadow-sm text-[#3713ec]' : 'text-slate-400'}`}
+            >
+                <Bold size={14} />
+            </button>
+            <button
+                onClick={() => onChange({ ...style, fontStyle: style?.fontStyle === 'italic' ? 'normal' : 'italic' })}
+                className={`p-2 rounded-lg transition-all ${style?.fontStyle === 'italic' ? 'bg-white shadow-sm text-[#3713ec]' : 'text-slate-400'}`}
+            >
+                <Italic size={14} />
+            </button>
+            <button
+                onClick={() => onChange({ ...style, textDecoration: style?.textDecoration === 'underline' ? 'none' : 'underline' })}
+                className={`p-2 rounded-lg transition-all ${style?.textDecoration === 'underline' ? 'bg-white shadow-sm text-[#3713ec]' : 'text-slate-400'}`}
+            >
+                <Underline size={14} />
+            </button>
+            <div className="w-px h-4 bg-slate-200 mx-1" />
+            <div className="relative group/color">
+                <input
+                    type="color"
+                    value={style?.color || '#1e293b'}
+                    onChange={e => onChange({ ...style, color: e.target.value })}
+                    className="w-7 h-7 rounded-lg overflow-hidden border-2 border-white shadow-sm cursor-pointer p-0"
+                />
+            </div>
+        </div>
+
+        {showLink && (
+            <div className="relative">
+                <LinkIcon size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" />
+                <input
+                    type="text"
+                    placeholder="Add link URL..."
+                    value={linkValue || ''}
+                    onChange={e => onLinkChange(e.target.value)}
+                    className="w-full border border-slate-100 rounded-lg pl-8 pr-3 py-1.5 text-[11px] font-bold text-slate-600 outline-none focus:border-[#3713ec]/40 bg-white"
+                />
+            </div>
+        )}
+    </div>
+);
+
 /* ───────────────────────── Settings panel ───────────────────────── */
-const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selectedField, updateField }) => (
-    <div className="w-64 flex-shrink-0 bg-white border-l border-slate-100 flex flex-col h-full overflow-y-auto">
+const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selectedField, updateField, onUpload }) => {
+    const bannerInputRef = React.useRef(null);
+    const fieldImageInputRef = React.useRef(null);
+    const [uploading, setUploading] = useState(false);
+
+    const handleFileChange = async (e, target) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            setUploading(true);
+            const formData = new FormData();
+            formData.append('image', file);
+            const res = await onUpload(formData);
+            const serverUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api/v1/jinraiForm', '') : 'http://localhost:5002';
+            const imageUrl = `${serverUrl}${res.data.url}`;
+
+            if (target === 'banner') {
+                setSettings(s => ({ ...s, bannerImage: imageUrl }));
+            } else if (target === 'field') {
+                updateField(selectedField.id, { imageUrl: imageUrl });
+            }
+        } catch (err) {
+            console.error("Upload failed", err);
+            alert("Failed to upload image.");
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    return (
+        <div className="w-64 flex-shrink-0 bg-white border-l border-slate-100 flex flex-col h-full overflow-y-auto no-scrollbar">
         {/* Tab bar */}
         <div className="flex border-b border-slate-100 sticky top-0 bg-white z-10">
             {['Field', 'Global'].map(t => (
@@ -155,6 +426,18 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                             <option>Password protected</option>
                         </select>
                     </SettingSection>
+
+                    {settings.visibility === 'Password protected' && (
+                        <SettingSection title="FORM PASSWORD">
+                            <input
+                                type="text"
+                                placeholder="Enter password to unlock"
+                                value={settings.password || ''}
+                                onChange={e => setSettings(s => ({ ...s, password: e.target.value }))}
+                                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#3713ec]/20 focus:border-[#3713ec]/40"
+                            />
+                        </SettingSection>
+                    )}
 
                     <SettingSection title="BUTTON LABEL">
                         <input
@@ -192,12 +475,33 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                 />
                             ))}
                         </div>
+                        <div className="mt-4">
+                            <p className="text-[9px] font-black text-slate-300 mb-2 uppercase">Background Color</p>
+                            <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-xl border border-slate-100">
+                                <input
+                                    type="color"
+                                    value={settings.secondaryColor || '#f8fafc'}
+                                    onChange={e => setSettings(s => ({ ...s, secondaryColor: e.target.value }))}
+                                    className="w-10 h-8 rounded-lg overflow-hidden border-2 border-white shadow-sm cursor-pointer p-0"
+                                />
+                                <span className="text-[10px] font-black text-slate-400 uppercase">{settings.secondaryColor || '#F8FAFC'}</span>
+                            </div>
+                        </div>
+                    </SettingSection>
+
+                    <SettingSection title="HEADER STYLE">
+                        <StyleToolbar 
+                            style={settings.headerStyle} 
+                            onChange={newStyle => setSettings(s => ({ ...s, headerStyle: newStyle }))} 
+                        />
                     </SettingSection>
 
                     <SettingSection title="BANNER IMAGE">
                         <div className="space-y-3">
                             <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 min-h-20 flex items-center justify-center">
-                                {settings.bannerImage ? (
+                                {uploading ? (
+                                    <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
+                                ) : settings.bannerImage ? (
                                     <>
                                         <img src={settings.bannerImage} alt="Banner" className="w-full h-20 object-cover" />
                                         <button
@@ -214,24 +518,29 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                     </div>
                                 )}
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex flex-col gap-2">
                                 <input
-                                    type="text"
-                                    placeholder="Paste image URL here..."
-                                    className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-700 outline-none focus:border-[#3713ec]/40 bg-white"
-                                    onBlur={(e) => {
-                                        if (e.target.value) {
-                                            setSettings(s => ({ ...s, bannerImage: e.target.value }));
-                                            e.target.value = '';
-                                        }
-                                    }}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && e.target.value) {
-                                            setSettings(s => ({ ...s, bannerImage: e.target.value }));
-                                            e.target.value = '';
-                                        }
-                                    }}
+                                    type="file"
+                                    ref={bannerInputRef}
+                                    onChange={(e) => handleFileChange(e, 'banner')}
+                                    className="hidden"
+                                    accept="image/*"
                                 />
+                                <button
+                                    onClick={() => bannerInputRef.current?.click()}
+                                    className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-black transition-all flex items-center justify-center gap-2"
+                                >
+                                    <Upload size={12} /> UPLOAD IMAGE
+                                </button>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        placeholder="Or paste URL here..."
+                                        value={settings.bannerImage || ''}
+                                        onChange={(e) => setSettings(s => ({ ...s, bannerImage: e.target.value }))}
+                                        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:border-[#3713ec]/40 bg-white"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </SettingSection>
@@ -248,6 +557,41 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                             />
                         </SettingSection>
 
+                        <SettingSection title="FIELD DESCRIPTION">
+                            <textarea
+                                value={selectedField.description || ''}
+                                onChange={e => updateField(selectedField.id, { description: e.target.value })}
+                                className="w-full border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold text-slate-500 bg-slate-50/50 outline-none focus:border-[#3713ec]/40 h-16 resize-none"
+                                placeholder="Add instructions or details..."
+                            />
+                        </SettingSection>
+
+                        <SettingSection title="LABEL STYLE">
+                            <StyleToolbar 
+                                style={selectedField.style} 
+                                onChange={s => updateField(selectedField.id, { style: s })} 
+                                showLink={true}
+                                linkValue={selectedField.link}
+                                onLinkChange={l => updateField(selectedField.id, { link: l })}
+                            />
+                        </SettingSection>
+
+                        <SettingSection title="DESCRIPTION STYLE">
+                            <StyleToolbar 
+                                style={selectedField.descriptionStyle} 
+                                onChange={s => updateField(selectedField.id, { descriptionStyle: s })} 
+                            />
+                        </SettingSection>
+
+                        {['multiple_choice', 'checkboxes', 'dropdown', 'bullet_list'].includes(selectedField.type) && (
+                            <SettingSection title="OPTION STYLE">
+                                <StyleToolbar 
+                                    style={selectedField.optionStyle} 
+                                    onChange={s => updateField(selectedField.id, { optionStyle: s })} 
+                                />
+                            </SettingSection>
+                        )}
+
                         <ToggleSetting
                             label="Required Field"
                             desc="Make answering this mandatory"
@@ -255,7 +599,124 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                             onChange={v => updateField(selectedField.id, { required: v })}
                         />
 
-                        {(selectedField.type === 'multiple_choice' || selectedField.type === 'checkboxes' || selectedField.type === 'dropdown') && (
+                        {selectedField.type === 'linear_scale' && (
+                            <>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <SettingSection title="MIN VALUE">
+                                        <input
+                                            type="number"
+                                            value={selectedField.min || 0}
+                                            onChange={e => updateField(selectedField.id, { min: parseInt(e.target.value) })}
+                                            className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 outline-none focus:border-[#3713ec]/40"
+                                        />
+                                    </SettingSection>
+                                    <SettingSection title="MAX VALUE">
+                                        <input
+                                            type="number"
+                                            value={selectedField.max || 10}
+                                            onChange={e => updateField(selectedField.id, { max: parseInt(e.target.value) })}
+                                            className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 outline-none focus:border-[#3713ec]/40"
+                                        />
+                                    </SettingSection>
+                                </div>
+                                <SettingSection title="MIN LABEL">
+                                    <input
+                                        type="text"
+                                        value={selectedField.minLabel || ''}
+                                        onChange={e => updateField(selectedField.id, { minLabel: e.target.value })}
+                                        className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 outline-none focus:border-[#3713ec]/40"
+                                        placeholder="E.g. Unsatisfied"
+                                    />
+                                </SettingSection>
+                                <SettingSection title="MAX LABEL">
+                                    <input
+                                        type="text"
+                                        value={selectedField.maxLabel || ''}
+                                        onChange={e => updateField(selectedField.id, { maxLabel: e.target.value })}
+                                        className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 outline-none focus:border-[#3713ec]/40"
+                                        placeholder="E.g. Very Satisfied"
+                                    />
+                                </SettingSection>
+                            </>
+                        )}
+
+                        {selectedField.type === 'slider' && (
+                            <div className="grid grid-cols-3 gap-2">
+                                <SettingSection title="MIN">
+                                    <input
+                                        type="number"
+                                        value={selectedField.min || 0}
+                                        onChange={e => updateField(selectedField.id, { min: parseInt(e.target.value) })}
+                                        className="w-full border border-slate-200 rounded-xl px-2 py-2 text-xs font-bold text-slate-700 outline-none focus:border-[#3713ec]/40"
+                                    />
+                                </SettingSection>
+                                <SettingSection title="MAX">
+                                    <input
+                                        type="number"
+                                        value={selectedField.max || 100}
+                                        onChange={e => updateField(selectedField.id, { max: parseInt(e.target.value) })}
+                                        className="w-full border border-slate-200 rounded-xl px-2 py-2 text-xs font-bold text-slate-700 outline-none focus:border-[#3713ec]/40"
+                                    />
+                                </SettingSection>
+                                <SettingSection title="STEP">
+                                    <input
+                                        type="number"
+                                        value={selectedField.step || 1}
+                                        onChange={e => updateField(selectedField.id, { step: parseInt(e.target.value) })}
+                                        className="w-full border border-slate-200 rounded-xl px-2 py-2 text-xs font-bold text-slate-700 outline-none focus:border-[#3713ec]/40"
+                                    />
+                                </SettingSection>
+                            </div>
+                        )}
+
+                        {selectedField.type === 'image' && (
+                            <SettingSection title="IMAGE SOURCE">
+                                <div className="space-y-3">
+                                    <input
+                                        type="file"
+                                        ref={fieldImageInputRef}
+                                        onChange={(e) => handleFileChange(e, 'field')}
+                                        className="hidden"
+                                        accept="image/*"
+                                    />
+                                    <button
+                                        onClick={() => fieldImageInputRef.current?.click()}
+                                        className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 hover:border-[#3713ec]/40 hover:text-[#3713ec] transition-all flex flex-col items-center justify-center gap-1"
+                                    >
+                                        {uploading ? (
+                                            <div className="w-4 h-4 border-2 border-slate-300 border-t-[#3713ec] rounded-full animate-spin" />
+                                        ) : (
+                                            <>
+                                                <Upload size={18} />
+                                                <span className="text-[10px] font-black uppercase">Click to Upload</span>
+                                            </>
+                                        )}
+                                    </button>
+                                    <div className="text-center text-[10px] font-black text-slate-300">OR</div>
+                                    <input
+                                        type="text"
+                                        value={selectedField.imageUrl || ''}
+                                        onChange={e => updateField(selectedField.id, { imageUrl: e.target.value })}
+                                        className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 outline-none focus:border-[#3713ec]/40"
+                                        placeholder="Paste image URL here..."
+                                    />
+                                </div>
+                            </SettingSection>
+                        )}
+
+                        {selectedField.type === 'video' && (
+                            <SettingSection title="YOUTUBE URL">
+                                <input
+                                    type="text"
+                                    value={selectedField.videoUrl || ''}
+                                    onChange={e => updateField(selectedField.id, { videoUrl: e.target.value })}
+                                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 outline-none focus:border-[#3713ec]/40"
+                                    placeholder="https://www.youtube.com/watch?v=..."
+                                />
+                            </SettingSection>
+                        )}
+
+                        {(selectedField.type === 'multiple_choice' || selectedField.type === 'checkboxes' || selectedField.type === 'dropdown' || selectedField.type === 'bullet_list') && (
                             <SettingSection title="OPTIONS">
                                 <div className="space-y-2">
                                     {(selectedField.options || ['Option 1', 'Option 2', 'Option 3']).map((opt, i) => (
@@ -305,6 +766,7 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
         </div>
     </div>
 );
+};
 
 const SettingSection = ({ title, children }) => (
     <div className="space-y-2">
@@ -348,7 +810,16 @@ const CreateForm = () => {
         resubmission: true,
         emailNotifications: false,
         themeColor: '#3713ec',
+        secondaryColor: '#f8fafc',
         bannerImage: null,
+        headerStyle: {
+            fontSize: '32px',
+            color: '#0f172a',
+            fontWeight: '900',
+            textAlign: 'center',
+            fontStyle: 'normal',
+            textDecoration: 'none',
+        }
     });
     const [status, setStatus] = useState('Draft');
     const [published, setPublished] = useState(false);
@@ -378,7 +849,7 @@ const CreateForm = () => {
                 const maxId = Math.max(...data.fields.map(f => f.id || 0));
                 idCounter = maxId;
             }
-            if (data.settings) setSettings(data.settings);
+            if (data.settings) setSettings(prev => ({ ...prev, ...data.settings }));
             setStatus(data.status);
             setResponsesCount(data.responsesCount || 0);
             setViewsCount(data.viewsCount || 0);
@@ -395,6 +866,38 @@ const CreateForm = () => {
         setFields(prev => [...prev, { id, type, label, required: false }]);
         setSelectedId(id);
         setSettingsTab('Field');
+    };
+
+    const moveField = (fromIndex, toIndex) => {
+        setFields(prev => {
+            const result = [...prev];
+            const [removed] = result.splice(fromIndex, 1);
+            result.splice(toIndex, 0, removed);
+            return result;
+        });
+    };
+
+    const [draggedIndex, setDraggedIndex] = useState(null);
+
+    const onDragStart = (e, index) => {
+        setDraggedIndex(index);
+        e.dataTransfer.setData('text/plain', index);
+        e.dataTransfer.effectAllowed = 'move';
+        // Add a visual class if needed
+    };
+
+    const onDragOver = (e, index) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    };
+
+    const onDrop = (e, toIndex) => {
+        e.preventDefault();
+        const fromIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
+        if (fromIndex !== toIndex) {
+            moveField(fromIndex, toIndex);
+        }
+        setDraggedIndex(null);
     };
 
     const handleSelectField = (id) => {
@@ -422,7 +925,19 @@ const CreateForm = () => {
                     type: f.type,
                     label: f.label,
                     required: f.required || false,
-                    options: f.options || []
+                    options: f.options || [],
+                    min: f.min,
+                    max: f.max,
+                    step: f.step,
+                    imageUrl: f.imageUrl,
+                    videoUrl: f.videoUrl,
+                    minLabel: f.minLabel,
+                    maxLabel: f.maxLabel,
+                    description: f.description,
+                    style: f.style,
+                    descriptionStyle: f.descriptionStyle,
+                    optionStyle: f.optionStyle,
+                    link: f.link
                 })),
                 settings,
                 status: publishStatus
@@ -440,18 +955,41 @@ const CreateForm = () => {
             if (publishStatus === 'Active') {
                 setPublished(true);
                 setTimeout(() => setPublished(false), 2500);
-            } else {
+            } else if (publishStatus === 'Draft' && !autoSaving) {
                 setSaved(true);
                 setTimeout(() => setSaved(false), 2000);
             }
         } catch (error) {
             console.error("Failed to save form", error);
-            const msg = error.response?.data?.message || "Failed to save form. Please try again.";
-            alert(msg);
+            if (!autoSaving) {
+                const msg = error.response?.data?.message || "Failed to save form. Please try again.";
+                alert(msg);
+            }
         } finally {
             setSaving(false);
         }
     };
+
+    const [autoSaving, setAutoSaving] = useState(false);
+    const lastSavedRef = useRef(null);
+
+    // Auto-save logic
+    useEffect(() => {
+        // Skip first load
+        if (!formId && fields.length === 0 && formTitle === 'Untitled Form') return;
+
+        const timer = setTimeout(async () => {
+            const currentPayload = JSON.stringify({ formTitle, formDesc, fields, settings });
+            if (lastSavedRef.current === currentPayload) return;
+            
+            setAutoSaving(true);
+            await saveFormToDb(status); // Save with current status
+            lastSavedRef.current = currentPayload;
+            setAutoSaving(false);
+        }, 3000); // 3 second debounce
+
+        return () => clearTimeout(timer);
+    }, [formTitle, formDesc, fields, settings]);
 
     const handleSave = () => {
         setStatus('Draft');
@@ -474,7 +1012,7 @@ const CreateForm = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
+        <div className="h-screen bg-[#F8FAFC] flex flex-col overflow-hidden">
             {/* Top Bar */}
             <header className="h-14 bg-white border-b border-slate-100 flex items-center justify-between px-6 sticky top-0 z-50 shadow-sm">
                 <div className="flex items-center gap-4">
@@ -493,7 +1031,9 @@ const CreateForm = () => {
                     <div className="hidden sm:flex items-center gap-1.5 text-[12px] text-slate-400 font-bold">
                         <span className="text-slate-700">{formTitle || 'Untitled Form'}</span>
                         <span>•</span>
-                        <span className="text-emerald-500">Auto-saved</span>
+                        <span className={autoSaving ? "text-slate-300" : "text-emerald-500"}>
+                            {autoSaving ? 'Saving...' : 'Auto-saved'}
+                        </span>
                     </div>
                 </div>
 
@@ -556,16 +1096,16 @@ const CreateForm = () => {
             </header>
 
             {/* Body: Left panel | Canvas | Right panel */}
-            <div className="flex flex-1 overflow-hidden" style={{ height: 'calc(100vh - 56px)' }}>
+            <div className="flex flex-1 overflow-hidden">
 
                 {/* ── Left: Field Palette ── */}
-                <aside className="w-52 flex-shrink-0 bg-white border-r border-slate-100 overflow-y-auto">
+                <aside className="w-52 h-full flex-shrink-0 bg-white border-r border-slate-100 overflow-y-auto no-scrollbar">
                     <FieldGroup title="BASIC FIELDS" fields={BASIC_FIELDS} onAdd={addField} themeColor={settings.themeColor} />
                     <FieldGroup title="ADVANCED FIELDS" fields={ADVANCED_FIELDS} onAdd={addField} themeColor={settings.themeColor} />
+                    <FieldGroup title="PRESENTATION" fields={CONTENT_FIELDS} onAdd={addField} themeColor={settings.themeColor} />
                 </aside>
-
                 {/* ── Center: Canvas ── */}
-                <main className="flex-1 overflow-y-auto px-6 py-8">
+                <main className="flex-1 h-full overflow-y-auto px-6 py-8 no-scrollbar transition-colors duration-500" style={{ backgroundColor: settings.secondaryColor || '#F8FAFC' }}>
                     <div className="max-w-2xl mx-auto space-y-4">
                         {/* Banner Image */}
                         {settings.bannerImage && (
@@ -579,27 +1119,48 @@ const CreateForm = () => {
                             <input
                                 value={formTitle}
                                 onChange={e => setFormTitle(e.target.value)}
-                                className="w-full text-3xl font-black text-slate-900 bg-transparent outline-none placeholder:text-slate-300 border-b-2 border-transparent focus:border-[#3713ec]/30 pb-1 transition-colors"
+                                className="w-full bg-transparent outline-none placeholder:text-slate-300 border-b-2 border-transparent focus:border-[#3713ec]/30 pb-1 transition-all"
+                                style={{
+                                    fontSize: settings.headerStyle?.fontSize || '30px',
+                                    fontWeight: settings.headerStyle?.fontWeight === 'black' ? 900 : settings.headerStyle?.fontWeight || '900',
+                                    color: settings.headerStyle?.color || '#0f172a',
+                                    textAlign: settings.headerStyle?.textAlign || 'left',
+                                    fontStyle: settings.headerStyle?.fontStyle || 'normal',
+                                    textDecoration: settings.headerStyle?.textDecoration || 'none',
+                                    fontFamily: settings.headerStyle?.fontFamily || 'inherit'
+                                }}
                                 placeholder="Untitled Form"
                             />
                             <input
                                 value={formDesc}
                                 onChange={e => setFormDesc(e.target.value)}
-                                className="w-full mt-3 text-[14px] text-slate-400 bg-transparent outline-none placeholder:text-slate-300"
+                                className="w-full mt-3 text-[14px] text-slate-400 bg-transparent outline-none placeholder:text-slate-300 transition-all font-medium"
+                                style={{
+                                    textAlign: settings.headerStyle?.textAlign || 'left',
+                                    fontFamily: settings.headerStyle?.fontFamily || 'inherit'
+                                }}
                                 placeholder="Add a description for your form"
                             />
                         </div>
 
                         {/* Fields */}
-                        {fields.map(field => (
-                            <FieldPreview
+                        {fields.map((field, index) => (
+                            <div
                                 key={field.id}
-                                field={field}
-                                isSelected={selectedId === field.id}
-                                onSelect={() => handleSelectField(field.id)}
-                                onDelete={() => deleteField(field.id)}
-                                themeColor={settings.themeColor}
-                            />
+                                draggable
+                                onDragStart={(e) => onDragStart(e, index)}
+                                onDragOver={(e) => onDragOver(e, index)}
+                                onDrop={(e) => onDrop(e, index)}
+                                className={draggedIndex === index ? 'opacity-40' : ''}
+                            >
+                                <FieldPreview
+                                    field={field}
+                                    isSelected={selectedId === field.id}
+                                    onSelect={() => handleSelectField(field.id)}
+                                    onDelete={() => deleteField(field.id)}
+                                    themeColor={settings.themeColor}
+                                />
+                            </div>
                         ))}
 
                         {/* Empty state */}
@@ -656,6 +1217,7 @@ const CreateForm = () => {
                     setSettings={setSettings}
                     selectedField={fields.find(f => f.id === selectedId)}
                     updateField={updateField}
+                    onUpload={(data) => api.post('/forms/upload', data)}
                 />
             </div>
 

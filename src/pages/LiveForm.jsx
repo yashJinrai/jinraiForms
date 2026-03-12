@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../lib/api';
 import {
     Zap, Check, AlertCircle, ChevronRight,
-    Upload, Calendar, Star, Send
+    Upload, Calendar, Star, Send, Clock, Palette,
+    User, Mail
 } from 'lucide-react';
 
 const LiveForm = () => {
@@ -15,23 +16,44 @@ const LiveForm = () => {
     const [submitting, setSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState(null);
+    const [passwordPrompt, setPasswordPrompt] = useState(false);
+    const [emailPrompt, setEmailPrompt] = useState(false);
+    const [passwordInput, setPasswordInput] = useState('');
+    const [emailInput, setEmailInput] = useState('');
 
     useEffect(() => {
         fetchForm();
     }, [id]);
 
-    const fetchForm = async () => {
+    const fetchForm = async (pass = null, email = null) => {
         try {
             setLoading(true);
-            const res = await api.get(`/forms/public/${id}`);
+            const params = new URLSearchParams();
+            if (pass || passwordInput) params.append('password', pass || passwordInput);
+            if (email || emailInput) params.append('email', email || emailInput);
+            
+            const url = params.toString() ? `/forms/public/${id}?${params.toString()}` : `/forms/public/${id}`;
+            const res = await api.get(url);
             if (res.data.success) {
                 setForm(res.data.data);
+                setPasswordPrompt(false);
+                setEmailPrompt(false);
+                setError(null);
             } else {
                 setError("Form not found or unavailable.");
             }
         } catch (err) {
             console.error("Error fetching form:", err);
-            setError(err.response?.data?.message || "Failed to load form. It might be private or deleted.");
+            const msg = err.response?.data?.message;
+            if (msg === "PasswordRequired" || err.response?.status === 401) {
+                setPasswordPrompt(true);
+                setError(pass ? "Incorrect password. Please try again." : null);
+            } else if (msg === "LoginRequired" || err.response?.status === 403) {
+                setEmailPrompt(true);
+                setError(null);
+            } else {
+                setError(msg || "Failed to load form. It might be private or deleted.");
+            }
         } finally {
             setLoading(false);
         }
@@ -48,7 +70,15 @@ const LiveForm = () => {
         e.preventDefault();
 
         // Basic validation for 'required' fields
-        const missingFields = form.fields.filter(f => f.required && !responses[f.id]);
+        const missingFields = form.fields.filter(f => {
+            if (!f.required) return false;
+            // Content types are never "required" for input
+            if (['image', 'video'].includes(f.type)) return false;
+            const val = responses[f.id];
+            // Check for empty, null, or undefined, but allow 0 as a valid number answer
+            return val === undefined || val === null || val === '';
+        });
+
         if (missingFields.length > 0) {
             alert(`Please fill in all required fields: ${missingFields.map(f => f.label).join(', ')}`);
             return;
@@ -77,10 +107,15 @@ const LiveForm = () => {
             const submitData = {
                 responses,
                 submitterName: submitterName || undefined,
-                submitterEmail: submitterEmail || undefined
+                submitterEmail: submitterEmail || emailInput || undefined
             };
 
-            await api.post(`/forms/public/${id}/submit`, submitData);
+            const params = new URLSearchParams();
+            if (passwordInput) params.append('password', passwordInput);
+            if (emailInput) params.append('email', emailInput);
+            
+            const submitUrl = params.toString() ? `/forms/public/${id}/submit?${params.toString()}` : `/forms/public/${id}/submit`;
+            await api.post(submitUrl, submitData);
             setSubmitted(true);
         } catch (err) {
             console.error("Submission error:", err);
@@ -96,6 +131,73 @@ const LiveForm = () => {
                 <div className="flex flex-col items-center gap-4">
                     <div className="w-12 h-12 border-4 border-[#3713ec] border-t-transparent rounded-full animate-spin" />
                     <p className="font-black text-slate-400 text-sm tracking-widest uppercase">Loading form...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (passwordPrompt) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+                <div className="max-w-md w-full bg-white rounded-[32px] p-10 shadow-2xl shadow-slate-200 border border-slate-100">
+                    <div className="w-16 h-16 bg-slate-100 text-slate-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <AlertCircle size={32} />
+                    </div>
+                    <h1 className="text-2xl font-black text-slate-900 mb-2 text-center">Protected Form</h1>
+                    <p className="text-slate-500 font-bold mb-6 text-center leading-relaxed">
+                        This form is password protected. Enter the password below to access it.
+                    </p>
+                    {error && <p className="text-red-500 text-sm font-bold text-center mb-4">{error}</p>}
+                    <form onSubmit={(e) => { e.preventDefault(); fetchForm(passwordInput, null); }}>
+                        <input
+                            type="password"
+                            placeholder="Enter password"
+                            value={passwordInput}
+                            onChange={(e) => setPasswordInput(e.target.value)}
+                            className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#3713ec]/40 mb-4"
+                            autoFocus
+                        />
+                        <button
+                            type="submit"
+                            className="w-full py-4 bg-[#3713ec] text-white font-black rounded-2xl hover:bg-[#2a0fd4] transition-all shadow-xl shadow-[#3713ec]/20"
+                        >
+                            Unlock Form
+                        </button>
+                    </form>
+                </div>
+            </div>
+        );
+    }
+
+    if (emailPrompt) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+                <div className="max-w-md w-full bg-white rounded-[32px] p-10 shadow-2xl shadow-slate-200 border border-slate-100">
+                    <div className="w-16 h-16 bg-indigo-50 text-indigo-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <Mail size={32} />
+                    </div>
+                    <h1 className="text-2xl font-black text-slate-900 mb-2 text-center">Login Required</h1>
+                    <p className="text-slate-500 font-bold mb-6 text-center leading-relaxed">
+                        This form is private. Please enter your email address to continue.
+                    </p>
+                    {error && <p className="text-red-500 text-sm font-bold text-center mb-4">{error}</p>}
+                    <form onSubmit={(e) => { e.preventDefault(); fetchForm(null, emailInput); }}>
+                        <input
+                            type="email"
+                            placeholder="your@email.com"
+                            value={emailInput}
+                            onChange={(e) => setEmailInput(e.target.value)}
+                            className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:border-[#3713ec]/40 mb-4"
+                            required
+                            autoFocus
+                        />
+                        <button
+                            type="submit"
+                            className="w-full py-4 bg-[#3713ec] text-white font-black rounded-2xl hover:bg-[#2a0fd4] transition-all shadow-xl shadow-[#3713ec]/20 flex items-center justify-center gap-2"
+                        >
+                            Access Form <ChevronRight size={18} />
+                        </button>
+                    </form>
                 </div>
             </div>
         );
@@ -146,11 +248,11 @@ const LiveForm = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC] py-12 px-4 sm:px-6 lg:px-8 font-sans">
+        <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 font-sans transition-colors duration-500" style={{ backgroundColor: form.settings?.secondaryColor || '#F8FAFC' }}>
             <div className="max-w-2xl mx-auto">
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Banner Image */}
-                    {form.settings?.bannerImage && (
+                    {form.settings?.bannerImage && form.settings.bannerImage.trim() !== '' && (
                         <div className="w-full h-48 rounded-[32px] overflow-hidden border border-slate-100 shadow-xl mb-4">
                             <img src={form.settings.bannerImage} alt="Form Banner" className="w-full h-full object-cover" />
                         </div>
@@ -159,7 +261,18 @@ const LiveForm = () => {
                     {/* Form Header Card */}
                     <div className="bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-xl shadow-slate-200/50" style={{ borderTop: `10px solid ${form.settings?.themeColor || '#3713ec'}` }}>
                         <div className="p-10 text-center">
-                            <h1 className="text-4xl font-black text-slate-900 tracking-tight mb-3">
+                            <h1 
+                                className="tracking-tight mb-3"
+                                style={{
+                                    fontSize: form.settings?.headerStyle?.fontSize || '36px',
+                                    fontWeight: form.settings?.headerStyle?.fontWeight || '900',
+                                    color: form.settings?.headerStyle?.color || '#0f172a',
+                                    textAlign: form.settings?.headerStyle?.textAlign || 'center',
+                                    fontStyle: form.settings?.headerStyle?.fontStyle || 'normal',
+                                    textDecoration: form.settings?.headerStyle?.textDecoration || 'none',
+                                    fontFamily: form.settings?.headerStyle?.fontFamily || 'inherit',
+                                }}
+                            >
                                 {form.title}
                             </h1>
                             {form.description && (
@@ -170,26 +283,58 @@ const LiveForm = () => {
                         </div>
                     </div>
 
-                    {/* Fields List */}
                     <div className="space-y-4">
-                        {form.fields && form.fields.map((field) => (
-                            <div
-                                key={field.id}
-                                className="bg-white rounded-[24px] p-8 border border-slate-100 shadow-lg shadow-slate-200/20 group transition-all duration-300"
-                                onMouseEnter={(e) => e.currentTarget.style.borderColor = `${form.settings?.themeColor}40`}
-                                onMouseLeave={(e) => e.currentTarget.style.borderColor = '#f1f5f9'}
-                            >
-                                <div className="flex items-start gap-4 mb-5">
-                                    <div className="flex-1">
-                                        <label className="text-[17px] font-black text-slate-800 flex items-center gap-2">
-                                            {field.label}
-                                            {field.required && <span className="text-red-500 text-lg">*</span>}
+                        {form.fields && form.fields.map((field) => {
+                            const isContentField = ['image', 'video'].includes(field.type);
+                            return (
+                                <div
+                                    key={field.id}
+                                    className={`bg-white rounded-[24px] border border-slate-100 shadow-lg shadow-slate-200/20 group transition-all duration-300 ${isContentField ? 'p-6' : 'p-8'}`}
+                                    onMouseEnter={(e) => e.currentTarget.style.borderColor = `${form.settings?.themeColor}40`}
+                                    onMouseLeave={(e) => e.currentTarget.style.borderColor = '#f1f5f9'}
+                                >
+                                    <div className={`flex flex-col gap-1 ${isContentField ? 'mb-4' : 'mb-5'}`}>
+                                        <label 
+                                            className={`font-black text-slate-800 flex items-center gap-2 ${isContentField ? 'text-[15px] justify-center opacity-70' : 'text-[17px]'}`}
+                                            style={{
+                                                fontSize: field.style?.fontSize || (isContentField ? '15px' : '17px'),
+                                                fontWeight: field.style?.fontWeight === 'black' ? 900 : field.style?.fontWeight || 'bold',
+                                                color: field.style?.color || '#1e293b',
+                                                textAlign: field.style?.textAlign || (isContentField ? 'center' : 'left'),
+                                                justifyContent: field.style?.textAlign === 'center' ? 'center' : field.style?.textAlign === 'right' ? 'flex-end' : 'flex-start',
+                                                fontStyle: field.style?.fontStyle || 'normal',
+                                                textDecoration: field.style?.textDecoration || 'none',
+                                                fontFamily: field.style?.fontFamily || 'inherit'
+                                            }}
+                                        >
+                                            {field.link ? (
+                                                <a href={field.link} target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">
+                                                    {field.label}
+                                                </a>
+                                            ) : field.label}
+                                            {field.required && !isContentField && <span className="text-red-500 text-lg">*</span>}
                                         </label>
+                                        {field.description && (
+                                            <p 
+                                                className="leading-relaxed"
+                                                style={{ 
+                                                    textAlign: field.descriptionStyle?.textAlign || field.style?.textAlign || (isContentField ? 'center' : 'left'),
+                                                    fontSize: field.descriptionStyle?.fontSize || '13px',
+                                                    color: field.descriptionStyle?.color || '#64748b',
+                                                    fontWeight: field.descriptionStyle?.fontWeight || '500',
+                                                    fontStyle: field.descriptionStyle?.fontStyle || 'normal',
+                                                    textDecoration: field.descriptionStyle?.textDecoration || 'none',
+                                                    fontFamily: field.descriptionStyle?.fontFamily || field.style?.fontFamily || 'inherit'
+                                                }}
+                                            >
+                                                {field.description}
+                                            </p>
+                                        )}
                                     </div>
+                                    {renderField(field, handleInputChange, responses[field.id], form.settings?.themeColor)}
                                 </div>
-                                {renderField(field, handleInputChange, responses[field.id], form.settings?.themeColor)}
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
 
                     {/* Submit Section */}
@@ -278,7 +423,16 @@ const renderField = (field, onChange, value = '', themeColor = '#3713ec') => {
                                 style={value === option ? { borderColor: themeColor, backgroundColor: themeColor } : { borderColor: '#cbd5e1', backgroundColor: 'white' }}>
                                 {value === option && <div className="w-2 h-2 rounded-full bg-white scale-110" />}
                             </div>
-                            <span className={`font-bold transition-colors`} style={value === option ? { color: themeColor } : { color: '#475569' }}>
+                            <span 
+                                className="font-bold transition-colors" 
+                                style={{ 
+                                    color: value === option ? themeColor : (field.optionStyle?.color || '#475569'),
+                                    fontSize: field.optionStyle?.fontSize || '16px',
+                                    fontWeight: field.optionStyle?.fontWeight || 'bold',
+                                    fontStyle: field.optionStyle?.fontStyle || 'normal',
+                                    textDecoration: field.optionStyle?.textDecoration || 'none'
+                                }}
+                            >
                                 {option}
                             </span>
                         </label>
@@ -307,7 +461,16 @@ const renderField = (field, onChange, value = '', themeColor = '#3713ec') => {
                                 style={selectedArr.includes(option) ? { borderColor: themeColor, backgroundColor: themeColor } : { borderColor: '#cbd5e1', backgroundColor: 'white' }}>
                                 {selectedArr.includes(option) && <Check size={14} className="text-white" strokeWidth={4} />}
                             </div>
-                            <span className={`font-bold transition-colors`} style={selectedArr.includes(option) ? { color: themeColor } : { color: '#475569' }}>
+                            <span 
+                                className="font-bold transition-colors" 
+                                style={{ 
+                                    color: selectedArr.includes(option) ? themeColor : (field.optionStyle?.color || '#475569'),
+                                    fontSize: field.optionStyle?.fontSize || '16px',
+                                    fontWeight: field.optionStyle?.fontWeight || 'bold',
+                                    fontStyle: field.optionStyle?.fontStyle || 'normal',
+                                    textDecoration: field.optionStyle?.textDecoration || 'none'
+                                }}
+                            >
                                 {option}
                             </span>
                         </label>
@@ -318,6 +481,13 @@ const renderField = (field, onChange, value = '', themeColor = '#3713ec') => {
             return (
                 <select
                     className={inputBase}
+                    style={{ 
+                        color: field.optionStyle?.color || '#000',
+                        fontSize: field.optionStyle?.fontSize || '16px',
+                        fontWeight: field.optionStyle?.fontWeight || 'bold',
+                        fontStyle: field.optionStyle?.fontStyle || 'normal',
+                        textDecoration: field.optionStyle?.textDecoration || 'none'
+                    }}
                     value={value}
                     onChange={(e) => onChange(field.id, e.target.value)}
                     required={field.required}
@@ -327,6 +497,25 @@ const renderField = (field, onChange, value = '', themeColor = '#3713ec') => {
                         <option key={idx} value={option}>{option}</option>
                     ))}
                 </select>
+            );
+        case 'bullet_list':
+            return (
+                <ul className="space-y-3 list-disc pl-8">
+                    {(field.options && field.options.length > 0 ? field.options : ['Item 1', 'Item 2']).map((option, idx) => (
+                        <li 
+                            key={idx} 
+                            style={{ 
+                                color: field.optionStyle?.color || '#475569',
+                                fontSize: field.optionStyle?.fontSize || '16px',
+                                fontWeight: field.optionStyle?.fontWeight || 'bold',
+                                fontStyle: field.optionStyle?.fontStyle || 'normal',
+                                textDecoration: field.optionStyle?.textDecoration || 'none'
+                            }}
+                        >
+                            {option}
+                        </li>
+                    ))}
+                </ul>
             );
         case 'file_upload':
             return (
@@ -386,6 +575,115 @@ const renderField = (field, onChange, value = '', themeColor = '#3713ec') => {
                     value={value}
                     onChange={(e) => onChange(field.id, e.target.value)}
                 />
+            );
+        case 'time_picker':
+            return (
+                <div className="relative">
+                    <Clock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <input
+                        type="time"
+                        className={`${inputBase} pl-12`}
+                        required={field.required}
+                        value={value}
+                        onChange={(e) => onChange(field.id, e.target.value)}
+                    />
+                </div>
+            );
+        case 'color_picker':
+            return (
+                <div className="flex items-center gap-4">
+                    <input
+                        type="color"
+                        className="w-16 h-16 rounded-2xl border-none cursor-pointer bg-transparent"
+                        required={field.required}
+                        value={value || '#3713ec'}
+                        onChange={(e) => onChange(field.id, e.target.value)}
+                    />
+                    <span className="font-mono font-bold text-slate-500 uppercase">{value || '#3713ec'}</span>
+                </div>
+            );
+        case 'linear_scale':
+            const min = field.min || 1;
+            const max = field.max || 5;
+            const range = Array.from({ length: max - min + 1 }, (_, i) => min + i);
+            return (
+                <div className="space-y-6">
+                    <div className="flex items-center justify-between px-2">
+                        <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{field.minLabel}</span>
+                        <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{field.maxLabel}</span>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                        {range.map(v => (
+                            <button
+                                key={v}
+                                type="button"
+                                onClick={() => onChange(field.id, v)}
+                                className={`flex-1 aspect-square sm:aspect-auto sm:h-14 rounded-2xl flex items-center justify-center font-black text-lg transition-all duration-300 border-2`}
+                                style={value === v
+                                    ? { backgroundColor: themeColor, borderColor: themeColor, color: 'white', transform: 'scale(1.05)', boxShadow: `0 10px 15px -3px ${themeColor}40` }
+                                    : { backgroundColor: '#f8fafc', borderColor: '#f1f5f9', color: '#64748b' }
+                                }
+                            >
+                                {v}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            );
+        case 'slider':
+            return (
+                <div className="space-y-4 px-2">
+                    <div className="flex justify-between font-black text-slate-400 text-[10px] uppercase tracking-widest">
+                        <span>{field.min || 0}</span>
+                        <span style={{ color: themeColor }}>Value: {value || field.min || 0}</span>
+                        <span>{field.max || 100}</span>
+                    </div>
+                    <input
+                        type="range"
+                        min={field.min || 0}
+                        max={field.max || 100}
+                        step={field.step || 1}
+                        value={value || field.min || 0}
+                        onChange={(e) => onChange(field.id, parseInt(e.target.value))}
+                        className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#3713ec]"
+                        style={{ accentColor: themeColor }}
+                    />
+                </div>
+            );
+        case 'image':
+            return field.imageUrl ? (
+                <div className="rounded-2xl overflow-hidden border border-slate-100 shadow-sm">
+                    <img src={field.imageUrl} alt={field.label} className="w-full h-auto object-cover" />
+                </div>
+            ) : (
+                <div className="p-8 bg-slate-50 rounded-2xl text-center text-slate-300 font-bold border-2 border-dashed border-slate-100 italic">
+                    Image placeholder
+                </div>
+            );
+        case 'video':
+            const getYoutubeId = (url) => {
+                if (!url) return null;
+                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+                const match = url.match(regExp);
+                return (match && match[2].length === 11) ? match[2] : null;
+            };
+            const videoId = getYoutubeId(field.videoUrl);
+            return videoId ? (
+                <div className="rounded-2xl overflow-hidden aspect-video border border-slate-100 shadow-sm bg-black">
+                    <iframe
+                        width="100%"
+                        height="100%"
+                        src={`https://www.youtube.com/embed/${videoId}`}
+                        title="YouTube video player"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                    ></iframe>
+                </div>
+            ) : (
+                <div className="p-8 bg-slate-900 rounded-2xl text-center text-slate-500 font-bold border border-slate-800 italic">
+                    YouTube video ID could not be resolved
+                </div>
             );
         default:
             return <p className="text-red-500">Unsupported field type: {field.type}</p>;
