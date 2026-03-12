@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import DashboardLayout from '../components/layout/DashboardLayout';
-import api from '../lib/api';
+import { useAuth } from '../hooks/useAuth';
 import {
     User,
     Mail,
@@ -19,48 +19,20 @@ import {
 } from 'lucide-react';
 
 const Profile = () => {
-    const [loading, setLoading] = useState(true);
-    const [userData, setUserData] = useState({
-        name: '',
-        email: '',
-        role: '',
-        location: '',
-        website: '',
-        bio: '',
-        twitter: '',
-        github: '',
-        linkedin: '',
-        profile_image: ''
-    });
-
-    useEffect(() => {
-        fetchProfile();
-    }, []);
-
-    const fetchProfile = async () => {
-        try {
-            setLoading(true);
-            const res = await api.get('/auth/valid_user');
-            if (res.data.success) {
-                const user = res.data.data;
-                setUserData({
-                    name: user.name || '',
-                    email: user.email || '',
-                    role: user.role === 'admin' ? 'Administrator' : 'User',
-                    location: user.location || 'Not Specified',
-                    website: user.website || 'Not Specified',
-                    bio: user.bio || 'No bio provided yet.',
-                    twitter: user.twitter || '',
-                    github: user.github || '',
-                    linkedin: user.linkedin || '',
-                    profile_image: user.profile_image || `https://ui-avatars.com/api/?name=${user.name || 'User'}&background=FF8A65&color=fff&bold=true`
-                });
-            }
-        } catch (error) {
-            console.error("Error fetching profile:", error);
-        } finally {
-            setLoading(false);
-        }
+    const { user: rawUser, loading } = useAuth();
+    
+    // Transform raw user data to fit component structure
+    const userData = {
+        name: rawUser?.name || '',
+        email: rawUser?.email || '',
+        role: rawUser?.role === 'admin' ? 'Administrator' : 'User',
+        location: rawUser?.location || 'Not Specified',
+        website: rawUser?.website || 'Not Specified',
+        bio: rawUser?.bio || 'No bio provided yet.',
+        twitter: rawUser?.twitter || '',
+        github: rawUser?.github || '',
+        linkedin: rawUser?.linkedin || '',
+        profile_image: rawUser?.profile_image || `https://ui-avatars.com/api/?name=${rawUser?.name || 'User'}&background=FF8A65&color=fff&bold=true`
     };
 
     const stats = [
@@ -89,24 +61,24 @@ const Profile = () => {
         <DashboardLayout>
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {/* Header Backdrop */}
-                <div className="relative h-64 rounded-[2rem] overflow-hidden bg-gradient-to-br from-[#3713ec] via-[#6366f1] to-[#a855f7] shadow-2xl shadow-indigo-500/20">
+                <div className="relative h-48 sm:h-64 rounded-[2rem] overflow-hidden bg-gradient-to-br from-[#3713ec] via-[#6366f1] to-[#a855f7] shadow-2xl shadow-indigo-500/20">
                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
 
-                    <button className="absolute bottom-6 right-8 flex items-center gap-2 px-5 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-xl text-white font-bold transition-all border border-white/20">
+                    <button className="absolute bottom-4 right-4 sm:bottom-6 sm:right-8 flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-xl text-white font-bold transition-all border border-white/20 text-xs sm:text-sm">
                         <Camera size={18} />
                         <span>Update Cover</span>
                     </button>
                 </div>
 
                 {/* Profile Main Content */}
-                <div className="relative -mt-24 px-8 pb-10">
-                    <div className="flex flex-col lg:flex-row gap-10">
+                <div className="relative -mt-16 sm:-mt-24 px-4 sm:px-8 pb-10">
+                    <div className="flex flex-col lg:flex-row gap-8 lg:gap-10">
                         {/* Profile Left Sidebar */}
                         <div className="w-full lg:w-80 shrink-0 space-y-6">
                             {/* Profile Image Card */}
                             <div className="bg-white/70 backdrop-blur-xl border border-white rounded-[2rem] p-6 shadow-xl shadow-slate-200/50">
-                                <div className="relative -mt-20 flex justify-center mb-6">
+                                <div className="relative -mt-16 sm:-mt-20 flex justify-center mb-6">
                                     <div className="relative">
                                         <div className="w-32 h-32 rounded-[2rem] border-4 border-white shadow-2xl overflow-hidden bg-white">
                                             <img
@@ -187,13 +159,13 @@ const Profile = () => {
                         {/* Profile Content Area */}
                         <div className="flex-1 space-y-10">
                             {/* Bio Section */}
-                            <div className="bg-white rounded-[2.5rem] p-10 shadow-xl shadow-slate-200/40 border border-slate-50">
-                                <div className="flex justify-between items-start mb-8">
+                            <div className="bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-xl shadow-slate-200/40 border border-slate-50">
+                                <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-8">
                                     <div>
-                                        <h2 className="text-2xl font-black text-slate-900 mb-2">My Biography</h2>
+                                        <h2 className="text-xl sm:text-2xl font-black text-slate-900 mb-2">My Biography</h2>
                                         <p className="text-slate-500 font-bold text-sm">Your professional story and background.</p>
                                     </div>
-                                    <a href="/settings" className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black rounded-xl transition-all">
+                                    <a href="/settings" className="w-full sm:w-auto text-center px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black rounded-xl transition-all text-sm">
                                         Update Details
                                     </a>
                                 </div>

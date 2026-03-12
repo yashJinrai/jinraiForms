@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../lib/api';
 import DashboardLayout from '../components/layout/DashboardLayout';
+import { useNotification } from '../context/NotificationContext';
 import {
     Plus, Edit2, Share2, MoreHorizontal, Calendar,
     MessageSquare, Briefcase, Mail, Star, Trash2,
@@ -135,6 +136,7 @@ const NewFormCard = ({ onCreate }) => (
 
 const MyForms = () => {
     const navigate = useNavigate();
+    const { showToast, confirm } = useNotification();
     const [activeTab, setActiveTab] = useState('All Forms');
     const [forms, setForms] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
@@ -187,12 +189,22 @@ const MyForms = () => {
     };
 
     const handleDelete = async (id) => {
+        const ok = await confirm({
+            title: 'Delete Form?',
+            message: 'This will permanently remove this form and all its responses. This action cannot be undone.',
+            confirmText: 'Yes, Delete',
+            variant: 'danger'
+        });
+
+        if (!ok) return;
+
         try {
             await api.delete(`/forms/${id}`);
             setForms(prev => prev.filter(f => f._id !== id));
+            showToast("Form deleted successfully");
         } catch (error) {
             console.error("Failed to delete form", error);
-            alert("Failed to delete form.");
+            showToast("Failed to delete form", "error");
         }
     };
     const handleEdit = (id) => navigate(`/forms/create?id=${id}`);
@@ -203,13 +215,13 @@ const MyForms = () => {
             <div className="space-y-8">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-4xl font-black text-slate-900 tracking-tight">My Forms</h1>
+                    <div className="text-center sm:text-left">
+                        <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">My Forms</h1>
                         <p className="text-slate-500 font-bold text-sm mt-1">Manage and track your active data collection forms.</p>
                     </div>
                     <button
                         onClick={handleCreate}
-                        className="flex items-center gap-2.5 px-6 py-3.5 bg-[#3713ec] hover:bg-[#2a0fd4] text-white font-black rounded-2xl shadow-xl shadow-[#3713ec]/25 transition-all group flex-shrink-0"
+                        className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#3713ec] hover:bg-[#2a0fd4] text-white font-black rounded-2xl shadow-xl shadow-[#3713ec]/25 transition-all group shrink-0"
                     >
                         <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
                         Create New Form
@@ -217,13 +229,13 @@ const MyForms = () => {
                 </div>
 
                 {/* Tabs + Search row */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex border-b border-slate-100 gap-1">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100">
+                    <div className="flex gap-1 overflow-x-auto no-scrollbar scroll-smooth -mb-px">
                         {STATUS_TABS.map(tab => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
-                                className={`px-4 py-2.5 text-[13px] font-black transition-all border-b-2 -mb-px ${activeTab === tab
+                                className={`px-4 py-2.5 text-[13px] font-black transition-all border-b-2 whitespace-nowrap ${activeTab === tab
                                     ? 'border-[#3713ec] text-[#3713ec]'
                                     : 'border-transparent text-slate-500 hover:text-slate-800'
                                     }`}

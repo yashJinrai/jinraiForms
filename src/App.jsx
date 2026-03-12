@@ -13,28 +13,48 @@ import Analytics from './pages/Analytics'
 import LiveForm from './pages/LiveForm'
 import Profile from './pages/Profile'
 import Settings from './pages/Settings'
+import Notifications from './pages/Notifications'
+import ProtectedRoute from './components/auth/ProtectedRoute'
+import NotFound from './pages/NotFound'
+import { useAuth } from './hooks/useAuth'
+import { Navigate } from 'react-router-dom'
 
 function App() {
 
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
+        {/* Public Routes - but restricted if already logged in */}
+        <Route path="/" element={<AuthRedirect><Signup /></AuthRedirect>} />
+        <Route path="/login" element={<AuthRedirect><Login /></AuthRedirect>} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-otp" element={<OtpVerifyPage />} />
         <Route path="/reset-password" element={<ResetPasswordSuccess />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/forms" element={<MyForms />} />
-        <Route path="/forms/create" element={<CreateForm />} />
-        <Route path="/responses" element={<Responses />} />
-        <Route path="/analytics" element={<Analytics />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/settings" element={<Settings />} />
+        
+        {/* Protected Routes */}
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/forms" element={<ProtectedRoute><MyForms /></ProtectedRoute>} />
+        <Route path="/forms/create" element={<ProtectedRoute><CreateForm /></ProtectedRoute>} />
+        <Route path="/responses" element={<ProtectedRoute><Responses /></ProtectedRoute>} />
+        <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+        <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+        
+        {/* Always Public */}
         <Route path="/form/:id" element={<LiveForm />} />
+
+        {/* 404 Catch All */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   )
+}
+
+function AuthRedirect({ children }) {
+  const { user, loading } = useAuth()
+  if (loading) return null
+  return user ? <Navigate to="/dashboard" replace /> : children
 }
 
 export default App

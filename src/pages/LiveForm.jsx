@@ -2,14 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../lib/api';
 import {
-    Zap, Check, AlertCircle, ChevronRight,
+    Check, AlertCircle, ChevronRight,
     Upload, Calendar, Star, Send, Clock, Palette,
-    User, Mail
+    User, Mail, Instagram, Facebook, MessageCircle, Twitter, Globe
 } from 'lucide-react';
+import { useNotification } from '../context/NotificationContext';
+import logo from '../assets/images/JLogobg.png';
+
+const formatSocialLink = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `https://${url}`;
+};
 
 const LiveForm = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { showToast } = useNotification();
     const [form, setForm] = useState(null);
     const [responses, setResponses] = useState({});
     const [loading, setLoading] = useState(true);
@@ -80,7 +89,7 @@ const LiveForm = () => {
         });
 
         if (missingFields.length > 0) {
-            alert(`Please fill in all required fields: ${missingFields.map(f => f.label).join(', ')}`);
+            showToast(`Please fill in all required fields: ${missingFields.map(f => f.label).join(', ')}`, "error");
             return;
         }
 
@@ -119,7 +128,7 @@ const LiveForm = () => {
             setSubmitted(true);
         } catch (err) {
             console.error("Submission error:", err);
-            alert("Failed to submit form. Please try again.");
+            showToast("Failed to submit form. Please try again.", "error");
         } finally {
             setSubmitting(false);
         }
@@ -236,9 +245,38 @@ const LiveForm = () => {
                     <p className="text-slate-500 font-bold mb-10 leading-relaxed">
                         Your response has been successfully recorded. You can now close this tab.
                     </p>
-                    <div className="pt-8 border-t border-slate-50 flex flex-col items-center gap-4">
+                    <div className="pt-8 border-t border-slate-50 flex flex-col items-center gap-6">
+                        {form.settings?.socialLinks && Object.values(form.settings.socialLinks).some(l => l) && (
+                            <div className="flex items-center gap-4">
+                                {form.settings.socialLinks.instagram && (
+                                    <a href={formatSocialLink(form.settings.socialLinks.instagram)} target="_blank" rel="noopener noreferrer" className="p-2 bg-indigo-50 rounded-full text-pink-500 hover:scale-110 transition-transform">
+                                        <Instagram size={18} />
+                                    </a>
+                                )}
+                                {form.settings.socialLinks.facebook && (
+                                    <a href={formatSocialLink(form.settings.socialLinks.facebook)} target="_blank" rel="noopener noreferrer" className="p-2 bg-indigo-50 rounded-full text-blue-600 hover:scale-110 transition-transform">
+                                        <Facebook size={18} />
+                                    </a>
+                                )}
+                                {form.settings.socialLinks.whatsapp && (
+                                    <a href={form.settings.socialLinks.whatsapp.startsWith('http') ? form.settings.socialLinks.whatsapp : `https://wa.me/${form.settings.socialLinks.whatsapp}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-indigo-50 rounded-full text-emerald-500 hover:scale-110 transition-transform">
+                                        <MessageCircle size={18} />
+                                    </a>
+                                )}
+                                {form.settings.socialLinks.twitter && (
+                                    <a href={formatSocialLink(form.settings.socialLinks.twitter)} target="_blank" rel="noopener noreferrer" className="p-2 bg-indigo-50 rounded-full text-slate-900 hover:scale-110 transition-transform">
+                                        <Twitter size={18} />
+                                    </a>
+                                )}
+                                {form.settings.socialLinks.website && (
+                                    <a href={formatSocialLink(form.settings.socialLinks.website)} target="_blank" rel="noopener noreferrer" className="p-2 bg-indigo-50 rounded-full text-indigo-600 hover:scale-110 transition-transform">
+                                        <Globe size={18} />
+                                    </a>
+                                )}
+                             </div>
+                        )}
                         <div className="flex items-center gap-2">
-                            <Zap className="text-[#3713ec] fill-[#3713ec]" size={16} />
+                            <img src={logo} alt="JinraiForms" className="w-4 h-4 object-contain" />
                             <span className="text-[12px] font-black text-slate-400 tracking-widest uppercase">Powered by JinraiForms</span>
                         </div>
                     </div>
@@ -253,18 +291,18 @@ const LiveForm = () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Banner Image */}
                     {form.settings?.bannerImage && form.settings.bannerImage.trim() !== '' && (
-                        <div className="w-full h-48 rounded-[32px] overflow-hidden border border-slate-100 shadow-xl mb-4">
+                        <div className="w-full h-32 sm:h-48 rounded-[24px] sm:rounded-[32px] overflow-hidden border border-slate-100 shadow-xl mb-2 sm:mb-4">
                             <img src={form.settings.bannerImage} alt="Form Banner" className="w-full h-full object-cover" />
                         </div>
                     )}
 
                     {/* Form Header Card */}
-                    <div className="bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-xl shadow-slate-200/50" style={{ borderTop: `10px solid ${form.settings?.themeColor || '#3713ec'}` }}>
-                        <div className="p-10 text-center">
+                    <div className="rounded-[24px] sm:rounded-[32px] overflow-hidden border border-slate-100 shadow-xl shadow-slate-200/50" style={{ borderTop: `10px solid ${form.settings?.themeColor || '#3713ec'}`, backgroundColor: form.settings?.headerStyle?.backgroundColor || '#ffffff' }}>
+                        <div className="p-6 sm:p-10 text-center">
                             <h1 
-                                className="tracking-tight mb-3"
+                                className="tracking-tight mb-2 sm:mb-3"
                                 style={{
-                                    fontSize: form.settings?.headerStyle?.fontSize || '36px',
+                                    fontSize: `calc(${form.settings?.headerStyle?.fontSize || '36px'} * 0.8)`,
                                     fontWeight: form.settings?.headerStyle?.fontWeight || '900',
                                     color: form.settings?.headerStyle?.color || '#0f172a',
                                     textAlign: form.settings?.headerStyle?.textAlign || 'center',
@@ -273,10 +311,15 @@ const LiveForm = () => {
                                     fontFamily: form.settings?.headerStyle?.fontFamily || 'inherit',
                                 }}
                             >
-                                {form.title}
+                                <style dangerouslySetInnerHTML={{ __html: `
+                                    @media (min-width: 640px) {
+                                        h1.dynamic-title { font-size: ${form.settings?.headerStyle?.fontSize || '36px'} !important; }
+                                    }
+                                `}} />
+                                <span className="dynamic-title">{form.title}</span>
                             </h1>
                             {form.description && (
-                                <p className="text-slate-500 font-bold leading-relaxed max-w-lg mx-auto">
+                                <p className="text-slate-500 font-bold leading-relaxed max-w-lg mx-auto text-sm sm:text-base">
                                     {form.description}
                                 </p>
                             )}
@@ -289,7 +332,8 @@ const LiveForm = () => {
                             return (
                                 <div
                                     key={field.id}
-                                    className={`bg-white rounded-[24px] border border-slate-100 shadow-lg shadow-slate-200/20 group transition-all duration-300 ${isContentField ? 'p-6' : 'p-8'}`}
+                                    className={`bg-white rounded-[20px] sm:rounded-[24px] border border-slate-100 shadow-lg shadow-slate-200/20 group transition-all duration-300 ${isContentField ? 'p-4 sm:p-6' : 'p-5 sm:p-8'}`}
+                                    style={{ backgroundColor: field.style?.backgroundColor || '#ffffff' }}
                                     onMouseEnter={(e) => e.currentTarget.style.borderColor = `${form.settings?.themeColor}40`}
                                     onMouseLeave={(e) => e.currentTarget.style.borderColor = '#f1f5f9'}
                                 >
@@ -361,15 +405,69 @@ const LiveForm = () => {
                             </div>
                         </button>
 
-                        {/* Branding */}
-                        <div className="flex flex-col items-center gap-3 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-                            <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 bg-slate-900 rounded-xl flex items-center justify-center transform rotate-12 group-hover:rotate-0 transition-transform">
-                                    <Zap size={14} className="text-white fill-white" />
+                        {/* Branding & Social Links */}
+                        <div className="flex flex-col items-center gap-6 mt-8">
+                            {form.settings?.socialLinks && Object.values(form.settings.socialLinks).some(l => l) && (
+                                <div className="flex items-center gap-4">
+                                    {form.settings.socialLinks.instagram && (
+                                        <a href={formatSocialLink(form.settings.socialLinks.instagram)} target="_blank" rel="noopener noreferrer" className="p-2.5 bg-white rounded-full border border-slate-100 shadow-sm text-pink-500 hover:scale-110 transition-transform">
+                                            <Instagram size={20} />
+                                        </a>
+                                    )}
+                                    {form.settings.socialLinks.facebook && (
+                                        <a href={formatSocialLink(form.settings.socialLinks.facebook)} target="_blank" rel="noopener noreferrer" className="p-2.5 bg-white rounded-full border border-slate-100 shadow-sm text-blue-600 hover:scale-110 transition-transform">
+                                            <Facebook size={20} />
+                                        </a>
+                                    )}
+                                    {form.settings.socialLinks.whatsapp && (
+                                        <a href={form.settings.socialLinks.whatsapp.startsWith('http') ? form.settings.socialLinks.whatsapp : `https://wa.me/${form.settings.socialLinks.whatsapp}`} target="_blank" rel="noopener noreferrer" className="p-2.5 bg-white rounded-full border border-slate-100 shadow-sm text-emerald-500 hover:scale-110 transition-transform">
+                                            <MessageCircle size={20} />
+                                        </a>
+                                    )}
+                                    {form.settings.socialLinks.twitter && (
+                                        <a href={formatSocialLink(form.settings.socialLinks.twitter)} target="_blank" rel="noopener noreferrer" className="p-2.5 bg-white rounded-full border border-slate-100 shadow-sm text-slate-900 hover:scale-110 transition-transform">
+                                            <Twitter size={20} />
+                                        </a>
+                                    )}
+                                    {form.settings.socialLinks.website && (
+                                        <a href={formatSocialLink(form.settings.socialLinks.website)} target="_blank" rel="noopener noreferrer" className="p-2.5 bg-white rounded-full border border-slate-100 shadow-sm text-indigo-600 hover:scale-110 transition-transform">
+                                            <Globe size={20} />
+                                        </a>
+                                    )}
                                 </div>
-                                <span className="font-black text-slate-900 text-[14px] tracking-tight">JinraiForms</span>
+                            )}
+
+                            {form.settings?.footer?.text && (
+                                <div 
+                                    className="max-w-md w-full px-6"
+                                    style={{
+                                        textAlign: form.settings.footer.style?.textAlign || 'center',
+                                        backgroundColor: form.settings.footer.style?.backgroundColor || 'transparent',
+                                    }}
+                                >
+                                    <p 
+                                        style={{
+                                            fontSize: form.settings.footer.style?.fontSize || '12px',
+                                            color: form.settings.footer.style?.color || '#94a3b8',
+                                            fontWeight: form.settings.footer.style?.fontWeight || 'bold',
+                                            lineHeight: '1.6',
+                                            whiteSpace: 'pre-wrap'
+                                        }}
+                                    >
+                                        {form.settings.footer.text}
+                                    </p>
+                                </div>
+                            )}
+                            
+                            <div className="flex flex-col items-center gap-3 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden p-1 shadow-sm border border-slate-100 bg-white">
+                                        <img src={logo} alt="JinraiForms" className="w-full h-full object-contain" />
+                                    </div>
+                                    <span className="font-black text-slate-900 text-[16px] tracking-tight">JinraiForms</span>
+                                </div>
+                                <span className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase text-center px-4">Built for Modern Data Collection</span>
                             </div>
-                            <span className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase">Built for Modern Data Collection</span>
                         </div>
                     </div>
                 </form>

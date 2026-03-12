@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { Download, ChevronLeft, ChevronRight, X, Calendar, Mail, User, FileText, Flag } from 'lucide-react';
 import api from '../lib/api';
@@ -17,45 +18,50 @@ const statusConfig = {
 const ResponseDetailModal = ({ response, onClose }) => {
     if (!response) return null;
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4" onClick={onClose}>
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" />
+            
             <div
-                className="bg-white rounded-[24px] shadow-2xl w-full max-w-md mx-4 p-8 relative"
+                className="bg-white rounded-t-[2rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md relative overflow-hidden transition-all transform animate-in slide-in-from-bottom sm:slide-in-from-none"
                 onClick={e => e.stopPropagation()}
             >
-                <button
-                    onClick={onClose}
-                    className="absolute top-5 right-5 p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all"
-                >
-                    <X size={18} />
-                </button>
-
-                {/* Avatar */}
-                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${response.avatarColor} flex items-center justify-center text-white font-black text-xl mb-4 shadow-lg`}>
-                    {response.initials}
-                </div>
-
-                <h2 className="text-2xl font-black text-slate-900">{response.name}</h2>
-                <span className={`inline-block mt-2 mb-6 text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${statusConfig[response.status]}`}>
-                    {response.status}
-                </span>
-
-                <div className="space-y-4">
-                    <DetailRow icon={<FileText size={16} />} label="Form" value={response.form} />
-                    <DetailRow icon={<Calendar size={16} />} label="Submitted" value={response.date} />
-                    <DetailRow icon={<User size={16} />} label="Submitter" value={response.name} />
-                    <DetailRow icon={<Mail size={16} />} label="Email" value={`${response.name.toLowerCase().replace(' ', '.')}@example.com`} />
-                </div>
-
-                <div className="mt-8 flex gap-3">
-                    <button className="flex-1 py-3 bg-[#3713ec] text-white font-black rounded-2xl hover:bg-[#2a0fd4] transition-all text-[13px]">
-                        Download PDF
-                    </button>
+                <div className="p-6 sm:p-8">
                     <button
                         onClick={onClose}
-                        className="flex-1 py-3 bg-slate-50 text-slate-700 font-black rounded-2xl hover:bg-slate-100 transition-all text-[13px]"
+                        className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-all"
                     >
-                        Close
+                        <X size={18} />
                     </button>
+
+                    {/* Avatar */}
+                    <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br ${response.avatarColor} flex items-center justify-center text-white font-black text-lg sm:text-xl mb-4 shadow-lg`}>
+                        {response.initials}
+                    </div>
+
+                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight">{response.name}</h2>
+                    <span className={`inline-block mt-2 mb-6 text-[10px] sm:text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${statusConfig[response.status]}`}>
+                        {response.status}
+                    </span>
+
+                    <div className="space-y-3 sm:space-y-4">
+                        <DetailRow icon={<FileText size={16} />} label="Form" value={response.form} />
+                        <DetailRow icon={<Calendar size={16} />} label="Submitted" value={response.date} />
+                        <DetailRow icon={<User size={16} />} label="Submitter" value={response.name} />
+                        <DetailRow icon={<Mail size={16} />} label="Email" value={response.email} />
+                    </div>
+
+                    <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                        <button className="w-full py-3.5 bg-[#3713ec] text-white font-black rounded-xl sm:rounded-2xl hover:bg-[#2a0fd4] transition-all text-[13px] shadow-lg shadow-[#3713ec]/20">
+                            Download PDF
+                        </button>
+                        <button
+                            onClick={onClose}
+                            className="w-full py-3.5 bg-slate-50 text-slate-700 font-black rounded-xl sm:rounded-2xl hover:bg-slate-100 transition-all text-[13px] border border-slate-100"
+                        >
+                            Close
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -75,20 +81,26 @@ const DetailRow = ({ icon, label, value }) => (
 );
 
 const Responses = () => {
+    const [searchParams] = useSearchParams();
+    const filterFormId = searchParams.get('formId');
     const [activeTab, setActiveTab] = useState('All Responses');
     const [page, setPage] = useState(1);
     const [selectedResponse, setSelectedResponse] = useState(null);
     const [responses, setResponses] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [formName, setFormName] = useState('');
 
     useEffect(() => {
         fetchResponses();
-    }, []);
+    }, [filterFormId]);
 
     const fetchResponses = async () => {
         try {
             setLoading(true);
-            const res = await api.get('/forms/responses/all');
+            const url = filterFormId
+                ? `/forms/responses/all?formId=${filterFormId}`
+                : '/forms/responses/all';
+            const res = await api.get(url);
             if (res.data.success) {
                 // Map backend data to frontend format
                 const mappedData = res.data.data.map((r, i) => {
@@ -116,6 +128,10 @@ const Responses = () => {
                     };
                 });
                 setResponses(mappedData);
+                // Set form name from first response if filtering
+                if (filterFormId && mappedData.length > 0) {
+                    setFormName(mappedData[0].form);
+                }
             }
         } catch (err) {
             console.error("Failed to fetch responses", err);
@@ -151,13 +167,17 @@ const Responses = () => {
             <div className="space-y-8">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-4xl font-black text-slate-900 tracking-tight">Responses</h1>
-                        <p className="text-slate-500 font-bold text-sm mt-1">View and manage your form submissions</p>
+                    <div className="text-center sm:text-left">
+                        <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
+                            {filterFormId ? `Responses: ${formName || 'Loading...'}` : 'Responses'}
+                        </h1>
+                        <p className="text-slate-500 font-bold text-sm mt-1">
+                            {filterFormId ? 'Viewing responses for this form only' : 'View and manage your form submissions'}
+                        </p>
                     </div>
                     <button
                         onClick={handleExport}
-                        className="flex items-center gap-2.5 px-6 py-3.5 bg-[#3713ec] hover:bg-[#2a0fd4] text-white font-black rounded-2xl shadow-xl shadow-[#3713ec]/25 transition-all flex-shrink-0"
+                        className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#3713ec] hover:bg-[#2a0fd4] text-white font-black rounded-2xl shadow-xl shadow-[#3713ec]/25 transition-all shrink-0"
                     >
                         <Download size={17} />
                         Export CSV
@@ -167,12 +187,12 @@ const Responses = () => {
                 {/* Table Card */}
                 <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
                     {/* Tabs */}
-                    <div className="flex border-b border-slate-100 px-6">
+                    <div className="flex border-b border-slate-100 px-4 sm:px-6 overflow-x-auto no-scrollbar scroll-smooth">
                         {TABS.map(tab => (
                             <button
                                 key={tab}
                                 onClick={() => { setActiveTab(tab); setPage(1); }}
-                                className={`px-4 py-4 text-[13px] font-black transition-all border-b-2 -mb-px ${activeTab === tab
+                                className={`px-4 py-4 text-[13px] font-black transition-all border-b-2 whitespace-nowrap -mb-px ${activeTab === tab
                                     ? 'border-[#3713ec] text-[#3713ec]'
                                     : 'border-transparent text-slate-500 hover:text-slate-800'
                                     }`}

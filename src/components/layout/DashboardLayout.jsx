@@ -1,21 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 
 const DashboardLayout = ({ children }) => {
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
     return (
         <div className="min-h-screen bg-[#F8FAFC]">
             {/* Sidebar */}
-            <Sidebar />
+            <Sidebar 
+                isOpen={isSidebarOpen} 
+                isCollapsed={isSidebarCollapsed}
+                onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                onClose={() => setIsSidebarOpen(false)} 
+            />
 
             {/* Main Content Area */}
-            <div className="lg:pl-64 flex flex-col min-h-screen">
+            <div className={`transition-all duration-300 flex flex-col min-h-screen ${isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}`}>
                 {/* Navbar */}
-                <Navbar />
+                <Navbar onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
 
                 {/* Page Content */}
-                <main className="flex-1 p-8">
-                    <div className="max-w-[1400px] mx-auto">
+                <main className="flex-1 p-4 sm:p-8">
+                    <div className="max-w-[1400px] mx-auto w-full">
                         {children}
                     </div>
                 </main>

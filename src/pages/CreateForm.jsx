@@ -8,8 +8,17 @@ import {
     ToggleRight, Bell, Check, X, ArrowLeft, Save, Share2,
     Clock, Sliders, Palette, Image, Youtube, Maximize2,
     Bold, Italic, Underline, Link as LinkIcon, List as ListIcon,
-    AlignCenter, AlignRight
+    AlignCenter, AlignRight, MessageSquare, Instagram, Facebook, MessageCircle, Twitter
 } from 'lucide-react';
+import { useNotification } from '../context/NotificationContext';
+import { useAuth } from '../hooks/useAuth';
+import logo from '../assets/images/JLogobg.png';
+
+const formatSocialLink = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `https://${url}`;
+};
 
 /* ───────────────────────── Field palette ───────────────────────── */
 const BASIC_FIELDS = [
@@ -210,7 +219,11 @@ const FieldPreview = ({ field, isSelected, onSelect, onDelete, themeColor }) => 
                     ? 'shadow-lg'
                     : 'border-slate-100 hover:border-slate-200 hover:shadow-md'
                 }`}
-            style={isSelected ? { borderColor: themeColor, boxShadow: `0 10px 25px -5px ${themeColor}15` } : {}}
+            style={{ 
+                borderColor: isSelected ? themeColor : '#f1f5f9', 
+                boxShadow: isSelected ? `0 10px 25px -5px ${themeColor}15` : 'none',
+                backgroundColor: field.style?.backgroundColor || '#ffffff'
+            }}
         >
             {/* Drag handle */}
             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab">
@@ -232,8 +245,10 @@ const FieldPreview = ({ field, isSelected, onSelect, onDelete, themeColor }) => 
                         }}
                     >
                         {field.label}
+                        {field.required && <span className="text-red-500 ml-1">*</span>}
                     </p>
                     <button
+                        type="button"
                         onClick={e => { e.stopPropagation(); onDelete(); }}
                         className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-slate-300 hover:text-red-500 rounded-lg"
                     >
@@ -266,7 +281,7 @@ const FieldPreview = ({ field, isSelected, onSelect, onDelete, themeColor }) => 
 };
 
 /* ───────────────────────── Style Toolbar ───────────────────────── */
-const StyleToolbar = ({ style, onChange, showLink = false, linkValue = '', onLinkChange }) => (
+const StyleToolbar = ({ style, onChange, showLink, linkValue, onLinkChange, showBg = false }) => (
     <div className="space-y-3">
         <div className="grid grid-cols-2 gap-2">
             <div>
@@ -338,13 +353,27 @@ const StyleToolbar = ({ style, onChange, showLink = false, linkValue = '', onLin
                 <Underline size={14} />
             </button>
             <div className="w-px h-4 bg-slate-200 mx-1" />
-            <div className="relative group/color">
-                <input
-                    type="color"
-                    value={style?.color || '#1e293b'}
-                    onChange={e => onChange({ ...style, color: e.target.value })}
-                    className="w-7 h-7 rounded-lg overflow-hidden border-2 border-white shadow-sm cursor-pointer p-0"
-                />
+            <div className="flex items-center gap-2">
+                <div className="relative group/color flex flex-col items-center">
+                    <input
+                        type="color"
+                        value={style?.color || '#1e293b'}
+                        onChange={e => onChange({ ...style, color: e.target.value })}
+                        className="w-7 h-7 rounded-lg overflow-hidden border-2 border-white shadow-sm cursor-pointer p-0"
+                    />
+                    <span className="text-[8px] font-black text-slate-300 mt-0.5">TEXT</span>
+                </div>
+                {showBg && (
+                    <div className="relative group/bgcolor flex flex-col items-center">
+                        <input
+                            type="color"
+                            value={style?.backgroundColor || '#ffffff'}
+                            onChange={e => onChange({ ...style, backgroundColor: e.target.value })}
+                            className="w-7 h-7 rounded-lg overflow-hidden border-2 border-white shadow-sm cursor-pointer p-0"
+                        />
+                        <span className="text-[8px] font-black text-slate-300 mt-0.5">BG</span>
+                    </div>
+                )}
             </div>
         </div>
 
@@ -365,8 +394,8 @@ const StyleToolbar = ({ style, onChange, showLink = false, linkValue = '', onLin
 
 /* ───────────────────────── Settings panel ───────────────────────── */
 const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selectedField, updateField, onUpload }) => {
-    const bannerInputRef = React.useRef(null);
-    const fieldImageInputRef = React.useRef(null);
+    const bannerInputRef = useRef(null);
+    const fieldImageInputRef = useRef(null);
     const [uploading, setUploading] = useState(false);
 
     const handleFileChange = async (e, target) => {
@@ -388,7 +417,7 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
             }
         } catch (err) {
             console.error("Upload failed", err);
-            alert("Failed to upload image.");
+            showToast("Failed to upload image.", "error");
         } finally {
             setUploading(false);
         }
@@ -493,7 +522,125 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                         <StyleToolbar 
                             style={settings.headerStyle} 
                             onChange={newStyle => setSettings(s => ({ ...s, headerStyle: newStyle }))} 
+                            showBg={true}
                         />
+                    </SettingSection>
+
+                    <SettingSection title="SOCIAL LINKS">
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-pink-50 flex items-center justify-center text-pink-500">
+                                    <Instagram size={16} />
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Instagram URL"
+                                    value={settings.socialLinks?.instagram || ''}
+                                    onChange={e => setSettings(s => ({ ...s, socialLinks: { ...s.socialLinks, instagram: e.target.value } }))}
+                                    className="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:border-pink-300"
+                                />
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                                    <Facebook size={16} />
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Facebook URL"
+                                    value={settings.socialLinks?.facebook || ''}
+                                    onChange={e => setSettings(s => ({ ...s, socialLinks: { ...s.socialLinks, facebook: e.target.value } }))}
+                                    className="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:border-blue-300"
+                                />
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500">
+                                    <MessageCircle size={16} />
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="WhatsApp Number or Link"
+                                    value={settings.socialLinks?.whatsapp || ''}
+                                    onChange={e => setSettings(s => ({ ...s, socialLinks: { ...s.socialLinks, whatsapp: e.target.value } }))}
+                                    className="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:border-emerald-300"
+                                />
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-900">
+                                    <Twitter size={16} />
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Twitter/X URL"
+                                    value={settings.socialLinks?.twitter || ''}
+                                    onChange={e => setSettings(s => ({ ...s, socialLinks: { ...s.socialLinks, twitter: e.target.value } }))}
+                                    className="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:border-slate-400"
+                                />
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500">
+                                    <Globe size={16} />
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Website URL"
+                                    value={settings.socialLinks?.website || ''}
+                                    onChange={e => setSettings(s => ({ ...s, socialLinks: { ...s.socialLinks, website: e.target.value } }))}
+                                    className="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:border-indigo-300"
+                                />
+                            </div>
+                        </div>
+                    </SettingSection>
+
+                    <SettingSection title="FOOTER">
+                        <div className="space-y-3">
+                            <textarea
+                                value={settings.footer?.text || ''}
+                                onChange={e => setSettings(s => ({ ...s, footer: { ...s.footer, text: e.target.value } }))}
+                                className="w-full border border-slate-200 rounded-xl px-4 py-2 text-[11px] font-bold text-slate-500 bg-slate-50/50 outline-none focus:border-[#3713ec]/40 h-20 resize-none"
+                                placeholder="Add custom footer text (e.g. Copyright, Address...)"
+                            />
+                            <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 space-y-2.5">
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <p className="text-[9px] font-black text-slate-300 mb-1 uppercase">Size</p>
+                                        <select 
+                                            value={settings.footer?.style?.fontSize || '12px'}
+                                            onChange={e => setSettings(s => ({ ...s, footer: { ...s.footer, style: { ...s.footer.style, fontSize: e.target.value } } }))}
+                                            className="w-full border border-slate-100 rounded-lg px-2 py-1 text-[11px] font-bold text-slate-600 outline-none bg-white"
+                                        >
+                                            <option value="10px">Smallest</option>
+                                            <option value="12px">Small</option>
+                                            <option value="14px">Base</option>
+                                            <option value="16px">Large</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <p className="text-[9px] font-black text-slate-300 mb-1 uppercase">Align</p>
+                                        <div className="flex bg-white rounded-lg p-0.5 border border-slate-100">
+                                            {['left', 'center', 'right'].map(align => (
+                                                <button
+                                                    key={align}
+                                                    type="button"
+                                                    onClick={() => setSettings(s => ({ ...s, footer: { ...s.footer, style: { ...s.footer.style, textAlign: align } } }))}
+                                                    className={`flex-1 py-1 rounded-md flex items-center justify-center transition-all ${settings.footer?.style?.textAlign === align ? 'bg-slate-50 text-[#3713ec]' : 'text-slate-300 hover:text-slate-500'}`}
+                                                >
+                                                    {align === 'left' ? <AlignLeft size={10} /> : align === 'center' ? <AlignCenter size={10} /> : <AlignRight size={10} />}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between bg-white p-1.5 px-2.5 rounded-lg border border-slate-100">
+                                    <p className="text-[9px] font-black text-slate-300 uppercase">Text Color</p>
+                                    <input
+                                        type="color"
+                                        value={settings.footer?.style?.color || '#94a3b8'}
+                                        onChange={e => setSettings(s => ({ ...s, footer: { ...s.footer, style: { ...s.footer.style, color: e.target.value } } }))}
+                                        className="w-8 h-5 rounded overflow-hidden border border-slate-100 cursor-pointer p-0"
+                                    />
+                                </div>
+                            </div>
+                        </div>
                     </SettingSection>
 
                     <SettingSection title="BANNER IMAGE">
@@ -573,6 +720,7 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                 showLink={true}
                                 linkValue={selectedField.link}
                                 onLinkChange={l => updateField(selectedField.id, { link: l })}
+                                showBg={true}
                             />
                         </SettingSection>
 
@@ -776,14 +924,24 @@ const SettingSection = ({ title, children }) => (
 );
 
 const ToggleSetting = ({ label, desc, value, onChange }) => (
-    <div className="flex items-start justify-between gap-3">
-        <div>
-            <p className="text-[13px] font-bold text-slate-800">{label}</p>
+    <div 
+        className="flex items-start justify-between gap-3 cursor-pointer group/toggle"
+        onClick={(e) => {
+            e.preventDefault();
+            onChange(!value);
+        }}
+    >
+        <div className="flex-1">
+            <p className="text-[13px] font-bold text-slate-800 group-hover/toggle:text-[#3713ec] transition-colors">{label}</p>
             <p className="text-[11px] text-slate-400 mt-0.5">{desc}</p>
         </div>
         <button
-            onClick={() => onChange(!value)}
+            type="button"
             className={`relative w-10 h-6 rounded-full transition-all flex-shrink-0 mt-0.5 ${value ? 'bg-[#3713ec]' : 'bg-slate-200'}`}
+            onClick={(e) => {
+                e.stopPropagation();
+                onChange(!value);
+            }}
         >
             <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all ${value ? 'left-5' : 'left-1'}`} />
         </button>
@@ -798,12 +956,15 @@ const CreateForm = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const editId = searchParams.get('id');
+    const { showToast, confirm } = useNotification();
+    const { user } = useAuth();
 
     const [formTitle, setFormTitle] = useState('Untitled Form');
     const [formDesc, setFormDesc] = useState('');
     const [fields, setFields] = useState([]);
     const [selectedId, setSelectedId] = useState(null);
-    const [settingsTab, setSettingsTab] = useState('Global');
+    const [settingsTab, setSettingsTab] = useState('Palette');
+    const [activeTab, setActiveTab] = useState('Global');
     const [settings, setSettings] = useState({
         visibility: 'Public (Anyone with link)',
         buttonLabel: 'Submit',
@@ -819,6 +980,23 @@ const CreateForm = () => {
             textAlign: 'center',
             fontStyle: 'normal',
             textDecoration: 'none',
+        },
+        socialLinks: {
+            instagram: '',
+            facebook: '',
+            whatsapp: '',
+            twitter: '',
+            website: ''
+        },
+        footer: {
+            text: '',
+            style: {
+                fontSize: '12px',
+                color: '#94a3b8',
+                textAlign: 'center',
+                fontWeight: 'bold',
+                backgroundColor: 'transparent'
+            }
         }
     });
     const [status, setStatus] = useState('Draft');
@@ -829,6 +1007,17 @@ const CreateForm = () => {
     const [loading, setLoading] = useState(false);
     const [responsesCount, setResponsesCount] = useState(0);
     const [viewsCount, setViewsCount] = useState(0);
+    const [isDirty, setIsDirty] = useState(false);
+    const initialLoadRef = useRef(true);
+
+    // Track unsaved changes
+    useEffect(() => {
+        if (initialLoadRef.current) {
+            initialLoadRef.current = false;
+            return;
+        }
+        setIsDirty(true);
+    }, [formTitle, formDesc, fields, settings]);
 
     useEffect(() => {
         if (editId) {
@@ -855,7 +1044,7 @@ const CreateForm = () => {
             setViewsCount(data.viewsCount || 0);
         } catch (error) {
             console.error("Failed to load form", error);
-            alert("Failed to load form.");
+            showToast("Failed to load form.", "error");
         } finally {
             setLoading(false);
         }
@@ -955,45 +1144,47 @@ const CreateForm = () => {
             if (publishStatus === 'Active') {
                 setPublished(true);
                 setTimeout(() => setPublished(false), 2500);
-            } else if (publishStatus === 'Draft' && !autoSaving) {
+            } else if (publishStatus === 'Draft') {
                 setSaved(true);
                 setTimeout(() => setSaved(false), 2000);
             }
+            setIsDirty(false);
         } catch (error) {
             console.error("Failed to save form", error);
-            if (!autoSaving) {
-                const msg = error.response?.data?.message || "Failed to save form. Please try again.";
-                alert(msg);
-            }
+            const msg = error.response?.data?.message || "Failed to save form. Please try again.";
+            showToast(msg, "error");
         } finally {
             setSaving(false);
         }
     };
 
-    const [autoSaving, setAutoSaving] = useState(false);
-    const lastSavedRef = useRef(null);
 
-    // Auto-save logic
-    useEffect(() => {
-        // Skip first load
-        if (!formId && fields.length === 0 && formTitle === 'Untitled Form') return;
-
-        const timer = setTimeout(async () => {
-            const currentPayload = JSON.stringify({ formTitle, formDesc, fields, settings });
-            if (lastSavedRef.current === currentPayload) return;
-            
-            setAutoSaving(true);
-            await saveFormToDb(status); // Save with current status
-            lastSavedRef.current = currentPayload;
-            setAutoSaving(false);
-        }, 3000); // 3 second debounce
-
-        return () => clearTimeout(timer);
-    }, [formTitle, formDesc, fields, settings]);
+    const onUpload = (formData) => {
+        return api.post('/forms/upload', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+    };
 
     const handleSave = () => {
         setStatus('Draft');
         saveFormToDb('Draft');
+    };
+
+    const handleBack = async () => {
+        if (!isDirty) {
+            navigate('/forms');
+            return;
+        }
+        const ok = await confirm({
+            title: 'Unsaved Changes?',
+            message: 'You have unsaved changes. Are you sure you want to leave the builder? Any unsaved progress will be lost.',
+            confirmText: 'Leave Builder',
+            cancelText: 'Stay & Save',
+            variant: 'danger'
+        });
+        if (ok) {
+            navigate('/forms');
+        }
     };
 
     const handlePublish = () => {
@@ -1003,109 +1194,134 @@ const CreateForm = () => {
 
     const handleShare = () => {
         if (!formId) {
-            alert("Please save the form first to share it.");
+            showToast("Please save the form first to share it.", "info");
             return;
         }
         const url = `${window.location.origin}/form/${formId}`;
         navigator.clipboard.writeText(url);
-        alert('Form link copied to clipboard!');
+        showToast('Form link copied to clipboard!');
     };
 
     return (
         <div className="h-screen bg-[#F8FAFC] flex flex-col overflow-hidden">
             {/* Top Bar */}
-            <header className="h-14 bg-white border-b border-slate-100 flex items-center justify-between px-6 sticky top-0 z-50 shadow-sm">
-                <div className="flex items-center gap-4">
+            <header className="h-14 bg-white border-b border-slate-100 flex items-center justify-between px-3 sm:px-6 sticky top-0 z-50 shadow-sm">
+                <div className="flex items-center gap-2 sm:gap-4">
                     <button
-                        onClick={() => navigate('/forms')}
+                        onClick={handleBack}
                         className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-all"
                     >
                         <ArrowLeft size={18} />
                     </button>
                     <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-lg flex items-center justify-center transition-colors" style={{ backgroundColor: settings.themeColor }}>
-                            <Zap className="text-white fill-white" size={13} />
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white shadow-sm overflow-hidden p-0.5 shrink-0">
+                            <img src={logo} alt="JinraiForms Logo" className="w-full h-full object-contain" />
                         </div>
-                        <span className="font-black text-slate-900 text-[14px]">JinraiForms</span>
+                        <span className="font-black text-slate-900 text-[13px] hidden lg:block">JinraiForms</span>
                     </div>
-                    <div className="hidden sm:flex items-center gap-1.5 text-[12px] text-slate-400 font-bold">
+                    <div className="hidden lg:flex items-center gap-1.5 text-[12px] text-slate-400 font-bold max-w-[100px] sm:max-w-none truncate">
                         <span className="text-slate-700">{formTitle || 'Untitled Form'}</span>
-                        <span>•</span>
-                        <span className={autoSaving ? "text-slate-300" : "text-emerald-500"}>
-                            {autoSaving ? 'Saving...' : 'Auto-saved'}
-                        </span>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                     {/* View count / response count */}
-                    <div className="hidden md:flex items-center gap-4 mr-2">
+                    <div className="flex items-center sm:gap-1 mr-1">
                         <button
-                            onClick={() => formId ? window.open(`http://localhost:5173/form/${formId}`, '_blank') : alert("Please save the form before previewing.")}
-                            className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-all"
+                            onClick={() => formId ? window.open(`http://localhost:5173/form/${formId}`, '_blank') : showToast("Please save the form before previewing.", "info")}
+                            className="flex items-center gap-2 p-1.5 sm:p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-all"
                             title="Preview Form"
                         >
-                            <Eye size={18} />
+                            <Eye className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
+                            <span className="hidden xl:inline text-[11px] font-black uppercase tracking-wider">Preview</span>
+                        </button>
+                        <button
+                            onClick={() => formId ? navigate(`/responses?formId=${formId}`) : showToast("Please save the form first to view responses.", "info")}
+                            className="flex items-center gap-2 p-1.5 sm:p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-all"
+                            title="View Responses"
+                        >
+                            <MessageSquare className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
+                            <span className="hidden xl:inline text-[11px] font-black uppercase tracking-wider">Responses</span>
                         </button>
                         <button
                             onClick={handleShare}
-                            className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-all"
+                            className="flex items-center gap-2 p-1.5 sm:p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-all"
                             title="Share Form"
                         >
-                            <Share2 size={18} />
-                        </button>
-                        <button
-                            onClick={() => setSettingsTab('Global')}
-                            className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-all"
-                            title="Form Settings"
-                        >
-                            <Settings size={18} />
+                            <Share2 className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
+                            <span className="hidden xl:inline text-[11px] font-black uppercase tracking-wider">Share</span>
                         </button>
                     </div>
 
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-black transition-all ${saved
+                        className={`flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-[12px] font-black transition-all ${saved
                             ? 'bg-emerald-100 text-emerald-600'
                             : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                             } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                         {saving ? <div className="w-3.5 h-3.5 border-2 border-slate-600 border-t-transparent rounded-full animate-spin" /> : saved ? <Check size={14} /> : <Save size={14} />}
-                        {saving ? 'Saving...' : saved ? 'Saved!' : 'Save'}
+                        <span className="hidden xs:block">{saving ? 'Saving...' : saved ? 'Saved' : 'Save'}</span>
                     </button>
 
                     <button
                         onClick={handlePublish}
                         disabled={saving}
-                        className={`flex items-center gap-1.5 px-5 py-2 rounded-xl text-[12px] font-black shadow-lg transition-all ${published
+                        className={`flex items-center gap-2 px-3 sm:px-5 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-[12px] font-black shadow-lg transition-all ${published
                             ? 'bg-emerald-500 text-white shadow-emerald-500/30'
                             : 'text-white hover:opacity-90'
                             } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
                         style={!published ? { backgroundColor: settings.themeColor, boxShadow: `0 10px 15px -3px ${settings.themeColor}30` } : {}}
                     >
                         {saving ? <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : published ? <Check size={14} /> : <Send size={14} />}
-                        {published ? 'Published!' : 'Publish'}
+                        <span className="hidden xs:block">{published ? 'Live' : 'Publish'}</span>
                     </button>
 
-                    {/* Avatar */}
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-300 to-rose-400 flex items-center justify-center text-white text-[11px] font-black ml-1 shadow-sm">
-                        AR
-                    </div>
                 </div>
             </header>
 
             {/* Body: Left panel | Canvas | Right panel */}
-            <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-1 overflow-hidden relative">
+                {/* Tab Switcher: Visible on Mobile and Tablet (below xl) */}
+                <div className="xl:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-white border border-slate-100 shadow-2xl rounded-2xl flex items-center p-1.5 gap-1">
+                    <button 
+                        onClick={() => setSettingsTab('Palette')} 
+                        className={`px-4 py-2 rounded-xl text-[11px] font-black transition-all ${settingsTab === 'Palette' ? 'bg-[#3713ec] text-white shadow-lg shadow-[#3713ec]/20' : 'text-slate-400 hover:bg-slate-50'}`}
+                    >
+                        Fields
+                    </button>
+                    {/* Canvas tab only needed on mobile (below lg) as it's always visible on Tablet/Desktop */}
+                    <button 
+                        onClick={() => setSettingsTab('Canvas')} 
+                        className={`lg:hidden px-4 py-2 rounded-xl text-[11px] font-black transition-all ${settingsTab === 'Canvas' ? 'bg-[#3713ec] text-white shadow-lg shadow-[#3713ec]/20' : 'text-slate-400 hover:bg-slate-50'}`}
+                    >
+                        Canvas
+                    </button>
+                    <button 
+                        onClick={() => setSettingsTab('Global')} 
+                        className={`px-4 py-2 rounded-xl text-[11px] font-black transition-all ${settingsTab === 'Global' || settingsTab === 'Field' ? 'bg-[#3713ec] text-white shadow-lg shadow-[#3713ec]/20' : 'text-slate-400 hover:bg-slate-50'}`}
+                    >
+                        Settings
+                    </button>
+                </div>
 
                 {/* ── Left: Field Palette ── */}
-                <aside className="w-52 h-full flex-shrink-0 bg-white border-r border-slate-100 overflow-y-auto no-scrollbar">
-                    <FieldGroup title="BASIC FIELDS" fields={BASIC_FIELDS} onAdd={addField} themeColor={settings.themeColor} />
-                    <FieldGroup title="ADVANCED FIELDS" fields={ADVANCED_FIELDS} onAdd={addField} themeColor={settings.themeColor} />
-                    <FieldGroup title="PRESENTATION" fields={CONTENT_FIELDS} onAdd={addField} themeColor={settings.themeColor} />
+                <aside className={`
+                    w-full lg:w-52 h-full flex-shrink-0 bg-white lg:border-r border-slate-100 overflow-y-auto no-scrollbar absolute inset-0 z-40 lg:relative transition-all duration-300
+                    ${settingsTab === 'Palette' ? 'translate-x-0 opacity-100' : '-translate-x-full xl:translate-x-0 xl:opacity-100 pointer-events-none xl:pointer-events-auto'}
+                    ${(settingsTab === 'Palette' || window.innerWidth >= 1280) ? 'block' : 'hidden xl:block'}
+                `}>
+                    <FieldGroup title="BASIC FIELDS" fields={BASIC_FIELDS} onAdd={(t, l) => { addField(t, l); setSettingsTab('Canvas'); }} themeColor={settings.themeColor} />
+                    <FieldGroup title="ADVANCED FIELDS" fields={ADVANCED_FIELDS} onAdd={(t, l) => { addField(t, l); setSettingsTab('Canvas'); }} themeColor={settings.themeColor} />
+                    <FieldGroup title="PRESENTATION" fields={CONTENT_FIELDS} onAdd={(t, l) => { addField(t, l); setSettingsTab('Canvas'); }} themeColor={settings.themeColor} />
+                    <div className="h-24 lg:hidden" /> {/* Spacer for mobile nav */}
                 </aside>
                 {/* ── Center: Canvas ── */}
-                <main className="flex-1 h-full overflow-y-auto px-6 py-8 no-scrollbar transition-colors duration-500" style={{ backgroundColor: settings.secondaryColor || '#F8FAFC' }}>
+                <main className={`
+                    flex-1 h-full overflow-y-auto px-4 sm:px-6 py-6 sm:py-8 no-scrollbar transition-all duration-300
+                    ${settingsTab === 'Canvas' ? 'translate-x-0 opacity-100' : 'hidden lg:block lg:translate-x-0 lg:opacity-100'}
+                `} style={{ backgroundColor: settings.secondaryColor || '#F8FAFC' }}>
                     <div className="max-w-2xl mx-auto space-y-4">
                         {/* Banner Image */}
                         {settings.bannerImage && (
@@ -1115,7 +1331,7 @@ const CreateForm = () => {
                         )}
 
                         {/* Form title card */}
-                        <div className="bg-white rounded-[20px] border border-slate-100 shadow-sm p-8" style={{ borderTop: `6px solid ${settings.themeColor}` }}>
+                        <div className="rounded-[20px] border border-slate-100 shadow-sm p-8" style={{ borderTop: `6px solid ${settings.themeColor}`, backgroundColor: settings.headerStyle?.backgroundColor || '#ffffff' }}>
                             <input
                                 value={formTitle}
                                 onChange={e => setFormTitle(e.target.value)}
@@ -1201,38 +1417,62 @@ const CreateForm = () => {
                             </button>
                         )}
 
-                        {/* Footer badges */}
-                        <div className="flex items-center justify-center gap-6 py-2 text-[11px] text-slate-400 font-bold">
-                            <span className="flex items-center gap-1.5">🔒 End-to-end encrypted</span>
-                            <span className="flex items-center gap-1.5">✅ Compliant with GDPR</span>
+                        {/* Footer badges & Social Links */}
+                        <div className="flex flex-col items-center gap-4 py-8">
+                            {settings.socialLinks && Object.values(settings.socialLinks).some(l => l) && (
+                                <div className="flex items-center gap-4">
+                                    {settings.socialLinks.instagram && (
+                                        <a href={formatSocialLink(settings.socialLinks.instagram)} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-full border border-slate-100 shadow-sm text-pink-500 hover:scale-110 transition-transform">
+                                            <Instagram size={18} />
+                                        </a>
+                                    )}
+                                    {settings.socialLinks.facebook && (
+                                        <a href={formatSocialLink(settings.socialLinks.facebook)} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-full border border-slate-100 shadow-sm text-blue-600 hover:scale-110 transition-transform">
+                                            <Facebook size={18} />
+                                        </a>
+                                    )}
+                                    {settings.socialLinks.whatsapp && (
+                                        <a href={settings.socialLinks.whatsapp.startsWith('http') ? settings.socialLinks.whatsapp : `https://wa.me/${settings.socialLinks.whatsapp}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-full border border-slate-100 shadow-sm text-emerald-500 hover:scale-110 transition-transform">
+                                            <MessageCircle size={18} />
+                                        </a>
+                                    )}
+                                    {settings.socialLinks.twitter && (
+                                        <a href={formatSocialLink(settings.socialLinks.twitter)} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-full border border-slate-100 shadow-sm text-slate-900 hover:scale-110 transition-transform">
+                                            <Twitter size={18} />
+                                        </a>
+                                    )}
+                                    {settings.socialLinks.website && (
+                                        <a href={formatSocialLink(settings.socialLinks.website)} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-full border border-slate-100 shadow-sm text-indigo-600 hover:scale-110 transition-transform">
+                                            <Globe size={18} />
+                                        </a>
+                                    )}
+                                </div>
+                            )}
+                            <div className="flex items-center justify-center gap-6 text-[11px] text-slate-400 font-bold">
+                                <span className="flex items-center gap-1.5">🔒 End-to-end encrypted</span>
+                                <span className="flex items-center gap-1.5">✅ Compliant with GDPR</span>
+                            </div>
                         </div>
                     </div>
                 </main>
 
                 {/* ── Right: Settings Panel ── */}
-                <SettingsPanel
-                    activeTab={settingsTab}
-                    setActiveTab={setSettingsTab}
-                    settings={settings}
-                    setSettings={setSettings}
-                    selectedField={fields.find(f => f.id === selectedId)}
-                    updateField={updateField}
-                    onUpload={(data) => api.post('/forms/upload', data)}
-                />
-            </div>
-
-            {/* Status bar */}
-            <div className="h-8 bg-white border-t border-slate-100 flex items-center justify-between px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                <div className="flex items-center gap-1.5">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    CONNECTED
-                </div>
-                <div className="flex items-center gap-6">
-                    <span>{responsesCount} RESPONSES</span>
-                    <span>{viewsCount} VIEWS</span>
-                    <span>DOCS</span>
-                    <span>SUPPORT</span>
-                    <span>V2.4.0-STABLE</span>
+                <div className={`
+                    w-full lg:w-64 flex-shrink-0 bg-white lg:border-l border-slate-100 overflow-y-auto no-scrollbar absolute inset-0 z-40 lg:relative transition-all duration-300
+                    ${(settingsTab === 'Global' || settingsTab === 'Field') ? 'translate-x-0 opacity-100' : 'translate-x-full xl:translate-x-0 xl:opacity-100 pointer-events-none xl:pointer-events-auto'}
+                    ${(settingsTab === 'Global' || settingsTab === 'Field' || window.innerWidth >= 1280) ? 'block' : 'hidden xl:block'}
+                `}>
+                    <SettingsPanel
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                        settings={settings}
+                        setSettings={setSettings}
+                        selectedField={fields.find(f => f.id === selectedId)}
+                        updateField={updateField}
+                        onUpload={onUpload}
+                        onClose={() => setSettingsTab('Canvas')}
+                    />
+                    <div className="h-24 lg:hidden" /> {/* Spacer for mobile nav */}
                 </div>
             </div>
         </div>
@@ -1241,14 +1481,14 @@ const CreateForm = () => {
 
 /* ───────────────────────── Field group in palette ───────────────────────── */
 const FieldGroup = ({ title, fields, onAdd, themeColor }) => (
-    <div className="p-4">
-        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 px-1">{title}</p>
-        <div className="space-y-1">
+    <div className="p-3 sm:p-4">
+        <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 sm:mb-3 px-1">{title}</p>
+        <div className="space-y-0.5 sm:space-y-1">
             {fields.map(f => (
                 <button
                     key={f.type}
                     onClick={() => onAdd(f.type, f.label)}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 text-[13px] font-bold text-slate-600 rounded-xl transition-all group text-left"
+                    className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 text-[11px] sm:text-[13px] font-bold text-slate-600 rounded-xl transition-all group text-left"
                     onMouseEnter={(e) => {
                         e.currentTarget.style.backgroundColor = `${themeColor}10`;
                         e.currentTarget.style.color = themeColor;
@@ -1258,8 +1498,8 @@ const FieldGroup = ({ title, fields, onAdd, themeColor }) => (
                         e.currentTarget.style.color = '#475569';
                     }}
                 >
-                    <span className="text-slate-400 group-hover:text-inherit transition-colors">{f.icon}</span>
-                    {f.label}
+                    <span className="text-slate-400 group-hover:text-inherit transition-colors scale-90 sm:scale-100">{f.icon}</span>
+                    <span className="truncate">{f.label}</span>
                 </button>
             ))}
         </div>
