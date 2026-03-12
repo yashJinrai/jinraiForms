@@ -1,7 +1,7 @@
 import React from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
-const StatCard = ({ title, value, icon, trend, color }) => {
+const StatCard = ({ title, value, icon, trend, color, breakdown }) => {
     const isPositive = trend.startsWith('+');
 
     return (
@@ -17,9 +17,40 @@ const StatCard = ({ title, value, icon, trend, color }) => {
                 </div>
             </div>
 
-            <div className="space-y-1">
-                <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">{title}</p>
-                <h3 className="text-3xl font-black text-slate-900 tracking-tight">{value}</h3>
+            <div className="space-y-4">
+                <div className="space-y-1">
+                    <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">{title}</p>
+                    <h3 className="text-3xl font-black text-slate-900 tracking-tight">{value}</h3>
+                </div>
+
+                {/* Optional breakdown bar */}
+                {breakdown && breakdown.length > 0 && (
+                    <div className="pt-2 border-t border-slate-50 mt-2 space-y-3">
+                        <div className="flex h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                            {breakdown.map((item, i) => {
+                                const total = breakdown.reduce((sum, b) => sum + (b.value || 0), 0);
+                                const width = total > 0 ? (item.value / total) * 100 : 0;
+                                return (
+                                    <div 
+                                        key={i} 
+                                        className={`h-full ${item.color} transition-all duration-500`}
+                                        style={{ width: `${width}%` }}
+                                    />
+                                );
+                            })}
+                        </div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1">
+                            {breakdown.map((item, i) => (
+                                <div key={i} className="flex items-center gap-1.5">
+                                    <div className={`w-2 h-2 rounded-full ${item.color}`} />
+                                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-tight">
+                                        {item.label}: {item.value}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

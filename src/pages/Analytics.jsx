@@ -298,6 +298,8 @@ const Analytics = () => {
     const [analyticsData, setAnalyticsData] = useState({
         totalViews: 0,
         totalResponses: 0,
+        totalFull: 0,
+        totalPartial: 0,
         responseTrend: [],
         topForms: []
     });
@@ -319,8 +321,43 @@ const Analytics = () => {
         fetchAnalytics();
     }, []);
 
-    const chartData = activeChart === 'responses' ? analyticsData.responseTrend : VIEW_TREND; // View trend is still mock as backend doesn't track time-series views yet
+    const chartData = activeChart === 'responses' ? analyticsData.responseTrend : VIEW_TREND; 
     const chartColor = activeChart === 'responses' ? '#3713ec' : '#8b5cf6';
+
+    // Dynamic Funnel Data
+    const dynamicFunnel = [
+        { 
+            step: 'Total Views', 
+            value: analyticsData.totalViews, 
+            pct: 100, 
+            color: 'bg-slate-200' 
+        },
+        { 
+            step: 'Submissions', 
+            value: analyticsData.totalResponses, 
+            pct: analyticsData.totalViews > 0 ? Math.round((analyticsData.totalResponses / analyticsData.totalViews) * 100) : 0, 
+            color: 'bg-indigo-400' 
+        },
+        { 
+            step: 'Full Completion', 
+            value: analyticsData.totalFull, 
+            pct: analyticsData.totalViews > 0 ? Math.round((analyticsData.totalFull / analyticsData.totalViews) * 100) : 0, 
+            color: 'bg-[#3713ec]' 
+        },
+        { 
+            step: 'Partial Only', 
+            value: analyticsData.totalPartial, 
+            pct: analyticsData.totalViews > 0 ? Math.round((analyticsData.totalPartial / analyticsData.totalViews) * 100) : 0, 
+            color: 'bg-violet-400' 
+        }
+    ];
+
+    // Dynamic Bar Data from top forms
+    const dynamicBarData = analyticsData.topForms.map(f => ({
+        label: f.name,
+        responses: f.responses,
+        completion: parseInt(f.completion) || 0
+    }));
 
     if (loading) {
         return (
@@ -384,34 +421,34 @@ const Analytics = () => {
                          trend="+0%"
                          up={true}
                          color="bg-blue-50"
-                         sub="vs. last period"
+                         sub="Total page opens"
                      />
                      <StatCard
-                         title="Total Responses"
-                         value={analyticsData.totalResponses.toLocaleString()}
-                         icon={<Send size={20} className="text-[#3713ec]" />}
-                         trend="+0%"
-                         up={true}
-                         color="bg-[#3713ec]/8"
-                         sub="vs. last period"
-                     />
-                     <StatCard
-                         title="Avg. Completion"
-                         value={analyticsData.totalViews > 0 ? `${((analyticsData.totalResponses / analyticsData.totalViews) * 100).toFixed(1)}%` : '0%'}
-                         icon={<Zap size={20} className="text-amber-600" />}
-                         trend="0%"
-                         up={false}
-                         color="bg-amber-50"
-                         sub="across all forms"
-                     />
-                     <StatCard
-                         title="Unique Respondents"
-                         value={analyticsData.totalResponses.toLocaleString()} // Fallback for now
-                         icon={<Users size={20} className="text-emerald-600" />}
+                         title="Full Completions"
+                         value={analyticsData.totalFull.toLocaleString()}
+                         icon={<Zap size={20} className="text-emerald-600" />}
                          trend="+0%"
                          up={true}
                          color="bg-emerald-50"
-                         sub="vs. last period"
+                         sub="100% fields filled"
+                     />
+                     <StatCard
+                         title="Partial Submissions"
+                         value={analyticsData.totalPartial.toLocaleString()}
+                         icon={<TrendingUp size={20} className="text-amber-600" />}
+                         trend="0%"
+                         up={false}
+                         color="bg-amber-50"
+                         sub="Some fields missing"
+                     />
+                     <StatCard
+                         title="Abandonment Rate"
+                         value={analyticsData.totalViews > 0 ? `${(((analyticsData.totalViews - analyticsData.totalResponses) / analyticsData.totalViews) * 100).toFixed(1)}%` : '0%'}
+                         icon={<TrendingDown size={20} className="text-red-600" />}
+                         trend="+0%"
+                         up={false}
+                         color="bg-red-50"
+                         sub="Bounced without submitting"
                      />
                 </div>
 
@@ -497,7 +534,7 @@ const Analytics = () => {
                                 Completion %
                             </span>
                         </div>
-                        <BarChart data={BAR_DATA} />
+                        <BarChart data={dynamicBarData} />
                     </div>
 
                     {/* Funnel */}
@@ -505,11 +542,11 @@ const Analytics = () => {
                         <div className="flex items-center justify-between mb-6">
                             <div>
                                 <h2 className="text-[17px] font-black text-slate-900">Conversion Funnel</h2>
-                                <p className="text-[12px] text-slate-400 font-bold mt-0.5">From views to submissions</p>
+                                <p className="text-[12px] text-slate-400 font-bold mt-0.5">From views to full submissions</p>
                             </div>
                         </div>
                         <div className="space-y-3">
-                            {FUNNEL.map((step, i) => (
+                            {dynamicFunnel.map((step, i) => (
                                 <div key={i}>
                                     <div className="flex items-center justify-between mb-1.5">
                                         <div className="flex items-center gap-2">
@@ -531,10 +568,10 @@ const Analytics = () => {
                                             )}
                                         </div>
                                     </div>
-                                    {i < FUNNEL.length - 1 && (
+                                    {i < dynamicFunnel.length - 1 && dynamicFunnel[i].value > 0 && (
                                         <div className="flex justify-start pl-1 mt-1">
                                             <span className="text-[10px] font-black text-red-400">
-                                                ↓ {100 - Math.round((FUNNEL[i + 1].value / step.value) * 100)}% drop-off
+                                                ↓ {100 - Math.round((dynamicFunnel[i+1].value / dynamicFunnel[i].value) * 100)}% drop-off
                                             </span>
                                         </div>
                                     )}
@@ -544,7 +581,9 @@ const Analytics = () => {
                         <div className="mt-5 pt-4 border-t border-slate-50">
                             <div className="flex items-center justify-between">
                                 <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">Overall Conversion</span>
-                                <span className="text-[15px] font-black text-[#3713ec]">28.4%</span>
+                                <span className="text-[15px] font-black text-[#3713ec]">
+                                    {analyticsData.totalViews > 0 ? ((analyticsData.totalFull / analyticsData.totalViews) * 100).toFixed(1) : '0'}%
+                                </span>
                             </div>
                         </div>
                     </div>

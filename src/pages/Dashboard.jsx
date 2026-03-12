@@ -24,7 +24,13 @@ const Dashboard = () => {
     const [totalActive, setTotalActive] = useState(0);
     const [statsData, setStatsData] = useState({
         totalResponses: '0',
-        avgCompletionRate: '0%'
+        avgCompletionRate: '0%',
+        formSuccessRate: '0%',
+        totalFull: 0,
+        totalPartial: 0,
+        totalAbandoned: 0,
+        fullCompletionPercentage: 0,
+        partialCompletionPercentage: 0
     });
 
     const gradients = [
@@ -63,7 +69,13 @@ const Dashboard = () => {
                 setTotalActive(stats.activeForms || 0);
                 setStatsData({
                     totalResponses: (stats.totalResponses || 0).toLocaleString(),
-                    avgCompletionRate: stats.avgCompletionRate || '0%'
+                    avgCompletionRate: stats.avgCompletionRate || '0%',
+                    formSuccessRate: stats.formSuccessRate || '0%',
+                    totalFull: stats.totalFull || 0,
+                    totalPartial: stats.totalPartial || 0,
+                    totalAbandoned: stats.totalAbandoned || 0,
+                    fullCompletionPercentage: stats.fullCompletionPercentage || 0,
+                    partialCompletionPercentage: stats.partialCompletionPercentage || 0
                 });
             } catch (error) {
                 console.error("Dashboard data fetch error", error);
@@ -91,11 +103,16 @@ const Dashboard = () => {
             color: 'text-purple-600 bg-purple-50'
         },
         {
-            title: 'Avg. Completion Rate',
-            value: statsData.avgCompletionRate,
+            title: 'Form Success Rate',
+            value: statsData.formSuccessRate,
             icon: <Zap size={22} />,
             trend: '0%',
-            color: 'text-amber-600 bg-amber-50'
+            color: 'text-emerald-600 bg-emerald-50',
+            breakdown: [
+                { label: 'Full', value: statsData.totalFull, color: 'bg-emerald-500' },
+                { label: 'Partial', value: statsData.totalPartial, color: 'bg-amber-400' },
+                { label: 'Bounced', value: statsData.totalAbandoned, color: 'bg-slate-300' }
+            ]
         }
     ];
 
