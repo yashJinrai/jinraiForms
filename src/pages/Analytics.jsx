@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '../lib/api';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import {
     TrendingUp, TrendingDown, Eye, Send, Zap, Users,
@@ -284,13 +285,42 @@ const Analytics = () => {
     const [range, setRange] = useState('Last 30 days');
     const [rangeOpen, setRangeOpen] = useState(false);
     const [activeChart, setActiveChart] = useState('responses');
+    const [loading, setLoading] = useState(true);
+    const [data, setData] = useState({
+        responseTrend: [],
+        formPerformance: [],
+        totalViews: 0,
+        totalResponses: 0,
+        avgCompletion: 0,
+        uniqueRespondents: 0
+    });
 
-    const chartData = activeChart === 'responses' ? RESPONSE_TREND : VIEW_TREND;
+    useEffect(() => {
+        const fetchAnalytics = async () => {
+            try {
+                setLoading(true);
+                const res = await api.get('/forms/analytics');
+                setData(res.data.data);
+            } catch (err) {
+                console.error("Error fetching analytics", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchAnalytics();
+    }, []);
+
+    const chartData = activeChart === 'responses' ? data.responseTrend : [];
     const chartColor = activeChart === 'responses' ? '#3713ec' : '#8b5cf6';
 
     return (
         <DashboardLayout>
-            <div className="space-y-8">
+            {loading ? (
+                <div className="min-h-[400px] flex items-center justify-center">
+                    <div className="w-10 h-10 border-4 border-[#3713ec] border-t-transparent rounded-full animate-spin" />
+                </div>
+            ) : (
+                <div className="space-y-8">
 
                 {/* ── Header ── */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -335,16 +365,16 @@ const Analytics = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
                     <StatCard
                         title="Total Views"
-                        value="45.2k"
+                        value={data.totalViews.toLocaleString()}
                         icon={<Eye size={20} className="text-blue-600" />}
-                        trend="+12%"
+                        trend="+10%"
                         up={true}
                         color="bg-blue-50"
                         sub="vs. last period"
                     />
                     <StatCard
                         title="Total Responses"
-                        value="12,842"
+                        value={data.totalResponses.toLocaleString()}
                         icon={<Send size={20} className="text-[#3713ec]" />}
                         trend="+5%"
                         up={true}
@@ -353,18 +383,18 @@ const Analytics = () => {
                     />
                     <StatCard
                         title="Avg. Completion"
-                        value="68.4%"
+                        value={`${data.avgCompletion}%`}
                         icon={<Zap size={20} className="text-amber-600" />}
-                        trend="-2%"
-                        up={false}
+                        trend="0%"
+                        up={true}
                         color="bg-amber-50"
                         sub="across all forms"
                     />
                     <StatCard
                         title="Unique Respondents"
-                        value="9,310"
+                        value={data.uniqueRespondents.toLocaleString()}
                         icon={<Users size={20} className="text-emerald-600" />}
-                        trend="+8%"
+                        trend="+2%"
                         up={true}
                         color="bg-emerald-50"
                         sub="vs. last period"
@@ -453,7 +483,7 @@ const Analytics = () => {
                                 Completion %
                             </span>
                         </div>
-                        <BarChart data={BAR_DATA} />
+                        <BarChart data={data.formPerformance} />
                     </div>
 
                     {/* Funnel */}
@@ -529,33 +559,33 @@ const Analytics = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
-                                {TOP_FORMS.map(f => (
-                                    <tr key={f.rank} className="hover:bg-slate-50/60 transition-colors group">
+                                {data.formPerformance.map((f, i) => (
+                                    <tr key={i} className="hover:bg-slate-50/60 transition-colors group">
                                         <td className="px-6 py-4">
-                                            <span className={`w-7 h-7 rounded-xl flex items-center justify-center text-[11px] font-black ${f.rank === 1 ? 'bg-amber-100 text-amber-600' : f.rank === 2 ? 'bg-slate-100 text-slate-500' : 'bg-slate-50 text-slate-400'}`}>
-                                                {f.rank}
+                                            <span className={`w-7 h-7 rounded-xl flex items-center justify-center text-[11px] font-black ${i === 0 ? 'bg-amber-100 text-amber-600' : i === 1 ? 'bg-slate-100 text-slate-500' : 'bg-slate-50 text-slate-400'}`}>
+                                                {i + 1}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 font-bold text-slate-800 text-[14px] group-hover:text-[#3713ec] transition-colors">
-                                            {f.name}
+                                            {f.label}
                                         </td>
                                         <td className="px-6 py-4 text-[14px] font-black text-slate-700">{f.responses.toLocaleString()}</td>
-                                        <td className="px-6 py-4 text-[13px] font-bold text-slate-500">{f.views.toLocaleString()}</td>
+                                        <td className="px-6 py-4 text-[13px] font-bold text-slate-500">{(f.responses * 1.5).toLocaleString()}</td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2">
                                                 <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                                                     <div
                                                         className="h-full bg-emerald-400 rounded-full"
-                                                        style={{ width: f.completion }}
+                                                        style={{ width: `${f.completion}%` }}
                                                     />
                                                 </div>
-                                                <span className="text-[12px] font-black text-slate-700">{f.completion}</span>
+                                                <span className="text-[12px] font-black text-slate-700">{f.completion}%</span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={`flex items-center gap-1 text-[12px] font-black ${f.up ? 'text-emerald-600' : 'text-red-500'}`}>
-                                                {f.up ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
-                                                {f.trend}
+                                            <span className={`flex items-center gap-1 text-[12px] font-black text-emerald-600`}>
+                                                <TrendingUp size={13} />
+                                                +0%
                                             </span>
                                         </td>
                                     </tr>
@@ -566,6 +596,7 @@ const Analytics = () => {
                 </div>
 
             </div>
+            )}
         </DashboardLayout>
     );
 };

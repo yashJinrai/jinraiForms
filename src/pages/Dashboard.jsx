@@ -21,7 +21,12 @@ const Dashboard = () => {
     const navigate = useNavigate();
     const [recentForms, setRecentForms] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [totalActive, setTotalActive] = useState(0);
+    const [stats, setStats] = useState({
+        totalForms: 0,
+        activeForms: 0,
+        totalResponses: 0,
+        responseTrend: 0
+    });
 
     const gradients = [
         'from-sky-50 via-blue-50 to-indigo-100',
@@ -35,11 +40,11 @@ const Dashboard = () => {
         const fetchDashboardData = async () => {
             try {
                 setLoading(true);
-                const res = await api.get('/forms');
-                const forms = res.data.data || [];
+                const res = await api.get('/forms/stats');
+                const { totalForms, activeForms, totalResponses, responseTrend, recentForms: forms } = res.data.data;
 
                 // Map the forms
-                const mappedForms = forms.slice(0, 4).map((f, i) => ({
+                const mappedForms = forms.map((f, i) => ({
                     id: f._id,
                     title: f.title,
                     date: new Date(f.createdAt).toLocaleDateString(),
@@ -51,7 +56,7 @@ const Dashboard = () => {
                 }));
 
                 setRecentForms(mappedForms);
-                setTotalActive(forms.filter(f => f.status === 'Active').length);
+                setStats({ totalForms, activeForms, totalResponses, responseTrend });
             } catch (error) {
                 console.error("Dashboard data fetch error", error);
             } finally {
@@ -62,26 +67,26 @@ const Dashboard = () => {
         fetchDashboardData();
     }, []);
 
-    const stats = [
+    const statCards = [
         {
             title: 'Total Active Forms',
-            value: totalActive.toString(),
+            value: stats.activeForms.toString(),
             icon: <MessageSquare size={22} />,
-            trend: '+2',
+            trend: stats.totalForms.toString(),
             color: 'text-blue-600 bg-blue-50'
         },
         {
             title: 'Total Responses',
-            value: '0',
+            value: stats.totalResponses.toLocaleString(),
             icon: <Send size={22} />,
-            trend: '+0%',
+            trend: `${stats.responseTrend >= 0 ? '+' : ''}${stats.responseTrend}%`,
             color: 'text-purple-600 bg-purple-50'
         },
         {
-            title: 'Avg. Completion Rate',
-            value: '0%',
+            title: 'Form Growth',
+            value: stats.totalForms.toString(),
             icon: <Zap size={22} />,
-            trend: '0%',
+            trend: 'Live',
             color: 'text-amber-600 bg-amber-50'
         }
     ];
@@ -106,7 +111,7 @@ const Dashboard = () => {
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {stats.map((stat, idx) => (
+                    {statCards.map((stat, idx) => (
                         <StatCard key={idx} {...stat} />
                     ))}
                 </div>
