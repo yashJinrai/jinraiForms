@@ -21,17 +21,17 @@ const Dashboard = () => {
     const navigate = useNavigate();
     const [recentForms, setRecentForms] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [totalActive, setTotalActive] = useState(0);
-    const [statsData, setStatsData] = useState({
-        totalResponses: '0',
-        avgCompletionRate: '0%',
-        formSuccessRate: '0%',
+    const [stats, setStats] = useState({
+        totalForms: 0,
+        activeForms: 0,
+        totalResponses: 0,
+        responseTrend: 0,
         totalFull: 0,
         totalPartial: 0,
         totalAbandoned: 0,
-        fullCompletionPercentage: 0,
-        partialCompletionPercentage: 0
+        formSuccessRate: '0%'
     });
+    const [viewType, setViewType] = useState('grid');
 
     const gradients = [
         'from-sky-50 via-blue-50 to-indigo-100',
@@ -45,19 +45,15 @@ const Dashboard = () => {
         const fetchDashboardData = async () => {
             try {
                 setLoading(true);
-                const [formsRes, statsRes] = await Promise.all([
-                    api.get('/forms'),
-                    api.get('/forms/stats')
-                ]);
-
-                const forms = formsRes.data.data || [];
-                const stats = statsRes.data.data || {};
+                const res = await api.get('/forms/stats');
+                const data = res.data.data;
+                const { totalForms, activeForms, totalResponses, responseTrend, dashboardForms: forms } = data;
 
                 // Map the forms
-                const mappedForms = forms.slice(0, 4).map((f, i) => ({
+                const mappedForms = forms.map((f, i) => ({
                     id: f._id,
                     title: f.title,
-                    date: new Date(f.createdAt).toLocaleDateString(),
+                    date: f.createdAt ? new Date(f.createdAt).toLocaleDateString() : 'N/A',
                     responses: f.responsesCount || 0,
                     status: f.status,
                     bgGradient: gradients[i % gradients.length],
@@ -66,16 +62,15 @@ const Dashboard = () => {
                 }));
 
                 setRecentForms(mappedForms);
-                setTotalActive(stats.activeForms || 0);
-                setStatsData({
-                    totalResponses: (stats.totalResponses || 0).toLocaleString(),
-                    avgCompletionRate: stats.avgCompletionRate || '0%',
-                    formSuccessRate: stats.formSuccessRate || '0%',
-                    totalFull: stats.totalFull || 0,
-                    totalPartial: stats.totalPartial || 0,
-                    totalAbandoned: stats.totalAbandoned || 0,
-                    fullCompletionPercentage: stats.fullCompletionPercentage || 0,
-                    partialCompletionPercentage: stats.partialCompletionPercentage || 0
+                setStats({ 
+                    totalForms, 
+                    activeForms, 
+                    totalResponses, 
+                    responseTrend,
+                    totalFull: data.totalFull || 0,
+                    totalPartial: data.totalPartial || 0,
+                    totalAbandoned: data.totalAbandoned || 0,
+                    formSuccessRate: data.formSuccessRate || '0%'
                 });
             } catch (error) {
                 console.error("Dashboard data fetch error", error);
@@ -87,31 +82,30 @@ const Dashboard = () => {
         fetchDashboardData();
     }, []);
 
-    const stats = [
+    const statCards = [
         {
             title: 'Total Active Forms',
-            value: totalActive.toString(),
+            value: stats.activeForms.toString(),
             icon: <MessageSquare size={22} />,
-            trend: '+2',
-            color: 'text-blue-600 bg-blue-50'
+            color: 'text-blue-600 bg-blue-50',
+            onClick: () => navigate('/forms')
         },
         {
             title: 'Total Responses',
-            value: statsData.totalResponses,
+            value: stats.totalResponses.toLocaleString(),
             icon: <Send size={22} />,
-            trend: '+0%',
-            color: 'text-purple-600 bg-purple-50'
+            color: 'text-purple-600 bg-purple-50',
+            onClick: () => navigate('/responses')
         },
         {
             title: 'Form Success Rate',
-            value: statsData.formSuccessRate,
+            value: stats.formSuccessRate,
             icon: <Zap size={22} />,
-            trend: '0%',
             color: 'text-emerald-600 bg-emerald-50',
             breakdown: [
-                { label: 'Full', value: statsData.totalFull, color: 'bg-emerald-500' },
-                { label: 'Partial', value: statsData.totalPartial, color: 'bg-amber-400' },
-                { label: 'Bounced', value: statsData.totalAbandoned, color: 'bg-slate-300' }
+                { label: 'Full', value: stats.totalFull, color: 'bg-emerald-500' },
+                { label: 'Partial', value: stats.totalPartial, color: 'bg-amber-400' },
+                { label: 'Bounced', value: stats.totalAbandoned, color: 'bg-slate-300' }
             ]
         }
     ];
@@ -136,26 +130,32 @@ const Dashboard = () => {
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {stats.map((stat, idx) => (
+                    {statCards.map((stat, idx) => (
                         <StatCard key={idx} {...stat} />
                     ))}
                 </div>
 
-                {/* Recent Forms Section */}
+                {/* Active Forms Section */}
                 <div className="space-y-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <h2 className="text-2xl font-black text-slate-900 tracking-tight">My Recent Forms</h2>
-                            <span className="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-[10px] font-black uppercase tracking-widest">
-                                {recentForms.length} Recent
+                            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Active Forms</h2>
+                            <span className="px-3 py-1 bg-emerald-100 text-emerald-600 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                                {recentForms.length} Active
                             </span>
                         </div>
 
                         <div className="flex items-center bg-white border border-slate-100 rounded-xl p-1.5 shadow-sm">
-                            <button className="p-2 bg-[#3713ec]/10 text-[#3713ec] rounded-lg">
+                            <button 
+                                onClick={() => setViewType('grid')}
+                                className={`p-2 rounded-lg transition-all ${viewType === 'grid' ? 'bg-[#3713ec]/10 text-[#3713ec]' : 'text-slate-400 hover:text-slate-600'}`}
+                            >
                                 <LayoutGrid size={18} />
                             </button>
-                            <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
+                            <button 
+                                onClick={() => setViewType('list')}
+                                className={`p-2 rounded-lg transition-all ${viewType === 'list' ? 'bg-[#3713ec]/10 text-[#3713ec]' : 'text-slate-400 hover:text-slate-600'}`}
+                            >
                                 <List size={18} />
                             </button>
                         </div>
@@ -165,18 +165,93 @@ const Dashboard = () => {
                         <div className="py-20 flex justify-center w-full">
                             <div className="w-8 h-8 border-4 border-[#3713ec] border-t-transparent rounded-full animate-spin" />
                         </div>
-                    ) : (
+                    ) : viewType === 'grid' ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+                            <FormCard isCreateNew onClick={() => navigate('/forms/create')} />
                             {recentForms.map((form) => (
                                 <FormCard
                                     key={form.id}
+                                    id={form.id}
                                     title={form.title}
                                     date={form.date}
                                     responses={form.responses}
                                     status={form.status}
+                                    bgGradient={form.bgGradient}
                                 />
                             ))}
-                            <FormCard isCreateNew onClick={() => navigate('/forms/create')} />
+                        </div>
+                    ) : (
+                        <div className="bg-white rounded-[24px] border border-slate-100 overflow-hidden shadow-sm">
+                            <div className="p-6">
+                                <div className="space-y-4">
+                                    <button 
+                                        onClick={() => navigate('/forms/create')}
+                                        className="w-full p-4 flex items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-slate-100 text-slate-400 hover:border-[#3713ec] hover:bg-[#3713ec]/5 hover:text-[#3713ec] transition-all font-black text-sm uppercase tracking-wide"
+                                    >
+                                        <Plus size={18} />
+                                        Create New Form
+                                    </button>
+                                    {recentForms.map((form) => (
+                                        <div 
+                                            key={form.id} 
+                                            className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border border-transparent hover:border-slate-100 hover:bg-slate-50/50 transition-all"
+                                        >
+                                            <div className="flex items-center gap-5 flex-1">
+                                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-[#3713ec] bg-gradient-to-br ${form.bgGradient || 'bg-[#3713ec]/5'}`}>
+                                                    <MessageSquare size={20} />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h4 className="font-black text-slate-900 group-hover:text-[#3713ec] transition-colors truncate">{form.title}</h4>
+                                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Created {form.date}</p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex items-center gap-4 sm:gap-10 mt-4 sm:mt-0 justify-between sm:justify-end">
+                                                <button 
+                                                    onClick={() => navigate(`/responses?formId=${form.id}`)}
+                                                    className="text-right hover:scale-105 transition-transform group/resp"
+                                                >
+                                                    <p className="text-sm font-black text-slate-900 group-hover/resp:text-[#3713ec]">{form.responses}</p>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Responses</p>
+                                                </button>
+                                                
+                                                <div className="flex items-center gap-3">
+                                                    <span className={`px-3 py-1 rounded-full text-[10px] font-black text-white uppercase tracking-wider ${
+                                                        form.status === 'Active' ? 'bg-green-500' : 
+                                                        form.status === 'Paused' ? 'bg-slate-400' : 'bg-amber-500'
+                                                    }`}>
+                                                        {form.status}
+                                                    </span>
+                                                    
+                                                    <div className="flex items-center gap-1.5 border-l border-slate-100 ml-2 pl-3">
+                                                        <button 
+                                                            onClick={() => navigate(`/form/${form.id}`)}
+                                                            className="p-2 text-slate-400 hover:text-[#3713ec] hover:bg-[#3713ec]/5 rounded-xl transition-all"
+                                                            title="View Live Form"
+                                                        >
+                                                            <Eye size={16} />
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => navigate(`/forms/${form.id}/edit`)}
+                                                            className="p-2 text-slate-400 hover:text-[#3713ec] hover:bg-[#3713ec]/5 rounded-xl transition-all"
+                                                            title="Edit Form"
+                                                        >
+                                                            <Plus size={16} className="rotate-45 text-slate-400" />
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => navigate(`/responses?formId=${form.id}`)}
+                                                            className="p-2 text-slate-400 hover:text-[#3713ec] hover:bg-[#3713ec]/5 rounded-xl transition-all"
+                                                            title="View Responses"
+                                                        >
+                                                            <Send size={16} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>

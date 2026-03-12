@@ -4,11 +4,12 @@ import api from '../lib/api'; // Import API client
 import {
     Type, AlignLeft, CheckSquare, Circle, ChevronDown,
     Upload, Calendar, Star, Mail, Plus, Zap, Eye, Send,
-    Trash2, GripVertical, ChevronRight, Settings, Globe,
+    Trash2, GripVertical, ChevronRight, ChevronLeft, Settings, Globe,
     ToggleRight, Bell, Check, X, ArrowLeft, Save, Share2,
     Clock, Sliders, Palette, Image, Youtube, Maximize2,
     Bold, Italic, Underline, Link as LinkIcon, List as ListIcon,
-    AlignCenter, AlignRight, MessageSquare, Instagram, Facebook, MessageCircle, Twitter
+    AlignCenter, AlignRight, MessageSquare, Instagram, Facebook, MessageCircle, Twitter,
+    Layers, FilePlus, Edit3, Copy
 } from 'lucide-react';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../hooks/useAuth';
@@ -393,7 +394,7 @@ const StyleToolbar = ({ style, onChange, showLink, linkValue, onLinkChange, show
 );
 
 /* ───────────────────────── Settings panel ───────────────────────── */
-const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selectedField, updateField, onUpload }) => {
+const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selectedField, updateField, onUpload, fields, setFields }) => {
     const bannerInputRef = useRef(null);
     const fieldImageInputRef = useRef(null);
     const [uploading, setUploading] = useState(false);
@@ -467,6 +468,62 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                             />
                         </SettingSection>
                     )}
+
+                    <SettingSection title="MULTI-PAGE FORM">
+                        <ToggleSetting
+                            label="Enable pages"
+                            desc="Split form into multiple pages"
+                            value={settings.pages?.enabled || false}
+                            onChange={v => {
+                                setSettings(s => ({
+                                    ...s,
+                                    pages: {
+                                        ...s.pages,
+                                        enabled: v,
+                                        labels: s.pages?.labels?.length ? s.pages.labels : ['Page 1']
+                                    }
+                                }));
+                                if (v) {
+                                    // Assign all existing fields to page 1 if they don't have a page
+                                    setFields(prev => prev.map(f => ({ ...f, page: f.page || 1 })));
+                                }
+                            }}
+                        />
+                        {settings.pages?.enabled && (
+                            <div className="mt-3 space-y-2">
+                                <p className="text-[9px] font-black text-slate-300 uppercase">Page Labels</p>
+                                {(settings.pages?.labels || ['Page 1']).map((label, idx) => (
+                                    <div key={idx} className="flex items-center gap-2">
+                                        <div className="w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-black text-white" style={{ backgroundColor: settings.themeColor }}>
+                                            {idx + 1}
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={label}
+                                            onChange={e => {
+                                                const newLabels = [...(settings.pages?.labels || ['Page 1'])];
+                                                newLabels[idx] = e.target.value;
+                                                setSettings(s => ({ ...s, pages: { ...s.pages, labels: newLabels } }));
+                                            }}
+                                            className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-700 outline-none focus:border-[#3713ec]/40"
+                                        />
+                                        <span className="text-[9px] font-black text-slate-300">
+                                            {fields.filter(f => f.page === idx + 1).length} fields
+                                        </span>
+                                    </div>
+                                ))}
+                                <button
+                                    onClick={() => {
+                                        const newLabels = [...(settings.pages?.labels || ['Page 1']), `Page ${(settings.pages?.labels?.length || 1) + 1}`];
+                                        setSettings(s => ({ ...s, pages: { ...s.pages, labels: newLabels } }));
+                                    }}
+                                    className="w-full py-2 border border-dashed border-slate-200 rounded-lg text-[11px] font-black text-slate-400 hover:border-[#3713ec]/40 hover:text-[#3713ec] transition-all flex items-center justify-center gap-1.5"
+                                >
+                                    <Plus size={12} /> ADD PAGE
+                                </button>
+                            </div>
+                        )}
+                    </SettingSection>
 
                     <SettingSection title="BUTTON LABEL">
                         <input
@@ -997,6 +1054,10 @@ const CreateForm = () => {
                 fontWeight: 'bold',
                 backgroundColor: 'transparent'
             }
+        },
+        pages: {
+            enabled: false,
+            labels: ['Page 1']
         }
     });
     const [status, setStatus] = useState('Draft');
@@ -1008,6 +1069,8 @@ const CreateForm = () => {
     const [responsesCount, setResponsesCount] = useState(0);
     const [viewsCount, setViewsCount] = useState(0);
     const [isDirty, setIsDirty] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [editingPageLabel, setEditingPageLabel] = useState(null);
     const initialLoadRef = useRef(true);
 
     // Track unsaved changes
@@ -1052,9 +1115,48 @@ const CreateForm = () => {
 
     const addField = (type, label) => {
         const id = uid();
-        setFields(prev => [...prev, { id, type, label, required: false }]);
+        const page = settings.pages?.enabled ? currentPage : 1;
+        setFields(prev => [...prev, { id, type, label, required: false, page }]);
         setSelectedId(id);
         setSettingsTab('Field');
+    };
+
+    // --- Multi-page helpers ---
+    const totalPages = settings.pages?.labels?.length || 1;
+
+    const addPage = () => {
+        const newLabels = [...(settings.pages?.labels || ['Page 1']), `Page ${totalPages + 1}`];
+        setSettings(s => ({ ...s, pages: { ...s.pages, labels: newLabels } }));
+        setCurrentPage(newLabels.length);
+    };
+
+    const deletePage = async (pageNum) => {
+        if (totalPages <= 1) return;
+        const fieldsOnPage = fields.filter(f => f.page === pageNum);
+        if (fieldsOnPage.length > 0) {
+            const ok = await confirm({
+                title: 'Delete Page?',
+                message: `This page has ${fieldsOnPage.length} field(s). Deleting it will also remove those fields. Continue?`,
+                confirmText: 'Delete Page',
+                cancelText: 'Cancel',
+                variant: 'danger'
+            });
+            if (!ok) return;
+        }
+        // Remove fields on this page and re-number pages above
+        setFields(prev => prev
+            .filter(f => f.page !== pageNum)
+            .map(f => f.page > pageNum ? { ...f, page: f.page - 1 } : f)
+        );
+        const newLabels = (settings.pages?.labels || ['Page 1']).filter((_, i) => i !== pageNum - 1);
+        setSettings(s => ({ ...s, pages: { ...s.pages, labels: newLabels } }));
+        if (currentPage >= pageNum) setCurrentPage(Math.max(1, currentPage - 1));
+    };
+
+    const renamePageLabel = (pageNum, newLabel) => {
+        const newLabels = [...(settings.pages?.labels || ['Page 1'])];
+        newLabels[pageNum - 1] = newLabel;
+        setSettings(s => ({ ...s, pages: { ...s.pages, labels: newLabels } }));
     };
 
     const moveField = (fromIndex, toIndex) => {
@@ -1126,7 +1228,8 @@ const CreateForm = () => {
                     style: f.style,
                     descriptionStyle: f.descriptionStyle,
                     optionStyle: f.optionStyle,
-                    link: f.link
+                    link: f.link,
+                    page: f.page || 1
                 })),
                 settings,
                 status: publishStatus
@@ -1359,63 +1462,142 @@ const CreateForm = () => {
                             />
                         </div>
 
-                        {/* Fields */}
-                        {fields.map((field, index) => (
-                            <div
-                                key={field.id}
-                                draggable
-                                onDragStart={(e) => onDragStart(e, index)}
-                                onDragOver={(e) => onDragOver(e, index)}
-                                onDrop={(e) => onDrop(e, index)}
-                                className={draggedIndex === index ? 'opacity-40' : ''}
-                            >
-                                <FieldPreview
-                                    field={field}
-                                    isSelected={selectedId === field.id}
-                                    onSelect={() => handleSelectField(field.id)}
-                                    onDelete={() => deleteField(field.id)}
-                                    themeColor={settings.themeColor}
-                                />
-                            </div>
-                        ))}
-
-                        {/* Empty state */}
-                        {fields.length === 0 && (
-                            <div className="bg-white rounded-[20px] border-2 border-dashed border-slate-200 p-16 flex flex-col items-center text-center">
-                                <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mb-5">
-                                    <Plus size={28} className="text-slate-300" />
-                                </div>
-                                <h3 className="font-black text-slate-800 text-lg mb-1">Build your form</h3>
-                                <p className="text-sm text-slate-400 max-w-xs">
-                                    Drag and drop fields from the left panel to start collecting data.
-                                </p>
+                        {/* ── Multi-Page Tabs Bar ── */}
+                        {settings.pages?.enabled && (
+                            <div className="bg-white rounded-[20px] border border-slate-100 shadow-sm p-3 flex items-center gap-2 overflow-x-auto no-scrollbar">
+                                {(settings.pages?.labels || ['Page 1']).map((label, idx) => {
+                                    const pageNum = idx + 1;
+                                    const isActive = currentPage === pageNum;
+                                    const fieldCount = fields.filter(f => f.page === pageNum).length;
+                                    return (
+                                        <div key={idx} className="flex items-center gap-1 flex-shrink-0">
+                                            {editingPageLabel === pageNum ? (
+                                                <input
+                                                    autoFocus
+                                                    className="px-3 py-2 text-[12px] font-black rounded-xl border-2 outline-none w-28"
+                                                    style={{ borderColor: settings.themeColor, color: settings.themeColor }}
+                                                    value={label}
+                                                    onChange={e => renamePageLabel(pageNum, e.target.value)}
+                                                    onBlur={() => setEditingPageLabel(null)}
+                                                    onKeyDown={e => { if (e.key === 'Enter') setEditingPageLabel(null); }}
+                                                />
+                                            ) : (
+                                                <button
+                                                    onClick={() => setCurrentPage(pageNum)}
+                                                    onDoubleClick={() => setEditingPageLabel(pageNum)}
+                                                    className={`relative px-4 py-2 text-[12px] font-black rounded-xl transition-all flex items-center gap-2 ${isActive
+                                                        ? 'text-white shadow-lg'
+                                                        : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'
+                                                    }`}
+                                                    style={isActive ? { backgroundColor: settings.themeColor, boxShadow: `0 4px 12px ${settings.themeColor}30` } : {}}
+                                                    title="Double-click to rename"
+                                                >
+                                                    <Layers size={12} />
+                                                    <span className="truncate max-w-[80px]">{label}</span>
+                                                    <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-black ${isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                                                        {fieldCount}
+                                                    </span>
+                                                </button>
+                                            )}
+                                            {isActive && totalPages > 1 && (
+                                                <button
+                                                    onClick={() => deletePage(pageNum)}
+                                                    className="p-1 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                                    title="Delete this page"
+                                                >
+                                                    <Trash2 size={12} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                                 <button
-                                    onClick={() => addField('short_text', 'Question')}
-                                    className="mt-6 px-5 py-2.5 font-black text-[13px] rounded-xl transition-all"
-                                    style={{ backgroundColor: `${settings.themeColor}15`, color: settings.themeColor }}
+                                    onClick={addPage}
+                                    className="flex-shrink-0 p-2 text-slate-300 hover:text-slate-600 hover:bg-slate-50 rounded-xl transition-all"
+                                    title="Add new page"
                                 >
-                                    + Add your first field
+                                    <Plus size={16} />
                                 </button>
                             </div>
                         )}
 
+                        {/* Fields (filtered by current page when multi-page is enabled) */}
+                        {(() => {
+                            const visibleFields = settings.pages?.enabled
+                                ? fields.filter(f => f.page === currentPage)
+                                : fields;
+                            return visibleFields.map((field) => {
+                                const globalIndex = fields.findIndex(f => f.id === field.id);
+                                return (
+                                    <div
+                                        key={field.id}
+                                        draggable
+                                        onDragStart={(e) => onDragStart(e, globalIndex)}
+                                        onDragOver={(e) => onDragOver(e, globalIndex)}
+                                        onDrop={(e) => onDrop(e, globalIndex)}
+                                        className={draggedIndex === globalIndex ? 'opacity-40' : ''}
+                                    >
+                                        <FieldPreview
+                                            field={field}
+                                            isSelected={selectedId === field.id}
+                                            onSelect={() => handleSelectField(field.id)}
+                                            onDelete={() => deleteField(field.id)}
+                                            themeColor={settings.themeColor}
+                                        />
+                                    </div>
+                                );
+                            });
+                        })()}
+
+                        {/* Empty state */}
+                        {(() => {
+                            const visibleFields = settings.pages?.enabled
+                                ? fields.filter(f => f.page === currentPage)
+                                : fields;
+                            return visibleFields.length === 0 && (
+                                <div className="bg-white rounded-[20px] border-2 border-dashed border-slate-200 p-16 flex flex-col items-center text-center">
+                                    <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mb-5">
+                                        <Plus size={28} className="text-slate-300" />
+                                    </div>
+                                    <h3 className="font-black text-slate-800 text-lg mb-1">
+                                        {settings.pages?.enabled ? `Build ${settings.pages?.labels?.[currentPage - 1] || `Page ${currentPage}`}` : 'Build your form'}
+                                    </h3>
+                                    <p className="text-sm text-slate-400 max-w-xs">
+                                        Drag and drop fields from the left panel to start collecting data.
+                                    </p>
+                                    <button
+                                        onClick={() => addField('short_text', 'Question')}
+                                        className="mt-6 px-5 py-2.5 font-black text-[13px] rounded-xl transition-all"
+                                        style={{ backgroundColor: `${settings.themeColor}15`, color: settings.themeColor }}
+                                    >
+                                        + Add your first field
+                                    </button>
+                                </div>
+                            );
+                        })()}
+
                         {/* Add section strip */}
-                        {fields.length > 0 && (
-                            <button
-                                onClick={() => addField('short_text', 'New Question')}
-                                className="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-[12px] font-black text-slate-400 hover:bg-white transition-all flex items-center justify-center gap-2 group"
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.borderColor = settings.themeColor;
-                                    e.currentTarget.style.color = settings.themeColor;
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.borderColor = '#e2e8f0';
-                                    e.currentTarget.style.color = '#94a3b8';
-                                }}
-                            >
-                                <Plus size={14} /> ADD SECTION
-                            </button>
-                        )}
+                        {(() => {
+                            const visibleFields = settings.pages?.enabled
+                                ? fields.filter(f => f.page === currentPage)
+                                : fields;
+                            return visibleFields.length > 0 && (
+                                <button
+                                    onClick={() => addField('short_text', 'New Question')}
+                                    className="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-[12px] font-black text-slate-400 hover:bg-white transition-all flex items-center justify-center gap-2 group"
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.borderColor = settings.themeColor;
+                                        e.currentTarget.style.color = settings.themeColor;
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.borderColor = '#e2e8f0';
+                                        e.currentTarget.style.color = '#94a3b8';
+                                    }}
+                                >
+                                    <Plus size={14} /> ADD FIELD
+                                </button>
+                            );
+                        })()}
 
                         {/* Footer badges & Social Links */}
                         <div className="flex flex-col items-center gap-4 py-8">
@@ -1471,6 +1653,8 @@ const CreateForm = () => {
                         updateField={updateField}
                         onUpload={onUpload}
                         onClose={() => setSettingsTab('Canvas')}
+                        fields={fields}
+                        setFields={setFields}
                     />
                     <div className="h-24 lg:hidden" /> {/* Spacer for mobile nav */}
                 </div>

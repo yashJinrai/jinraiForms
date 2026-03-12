@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../lib/api';
 import {
-    Check, AlertCircle, ChevronRight,
+    Check, AlertCircle, ChevronRight, ChevronLeft,
     Upload, Calendar, Star, Send, Clock, Palette,
-    User, Mail, Instagram, Facebook, MessageCircle, Twitter, Globe
+    User, Mail, Instagram, Facebook, MessageCircle, Twitter, Globe,
+    Layers
 } from 'lucide-react';
 import { useNotification } from '../context/NotificationContext';
 import logo from '../assets/images/JLogobg.png';
@@ -29,6 +30,7 @@ const LiveForm = () => {
     const [emailPrompt, setEmailPrompt] = useState(false);
     const [passwordInput, setPasswordInput] = useState('');
     const [emailInput, setEmailInput] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
         fetchForm();
@@ -75,21 +77,90 @@ const LiveForm = () => {
         }));
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    // --- Multi-page helpers ---
+    const fieldPageMax = form?.fields?.length ? Math.max(...form.fields.map(f => f.page || 1)) : 1;
+    const labelsCount = form?.settings?.pages?.labels?.length || 0;
+    const isMultiPage = form?.settings?.pages?.enabled && (labelsCount > 1 || fieldPageMax > 1);
+    const totalPages = isMultiPage ? Math.max(labelsCount, fieldPageMax) : 1;
+    
+    // Ensure we have enough labels for the progress bar
+    const pageLabels = [...(form?.settings?.pages?.labels || [])];
+    while (pageLabels.length < totalPages) {
+        pageLabels.push(`Page ${pageLabels.length + 1}`);
+    }
 
-        // Basic validation for 'required' fields
-        const missingFields = form.fields.filter(f => {
+    const getFieldsForPage = (pageNum) => {
+        if (!isMultiPage) return form?.fields || [];
+        // Ensure fields without a page default to 1
+        return (form?.fields || []).filter(f => (f.page || 1) === pageNum);
+    };
+
+    const currentPageFields = getFieldsForPage(currentPage);
+
+    const validateCurrentPage = () => {
+        const missing = currentPageFields.filter(f => {
             if (!f.required) return false;
-            // Content types are never "required" for input
             if (['image', 'video'].includes(f.type)) return false;
             const val = responses[f.id];
-            // Check for empty, null, or undefined, but allow 0 as a valid number answer
+            return val === undefined || val === null || val === '';
+        });
+        if (missing.length > 0) {
+            showToast(`Please fill in required fields: ${missing.map(f => f.label).join(', ')}`, "error");
+            return false;
+        }
+        return true;
+    };
+
+    const goNextPage = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        if (!validateCurrentPage()) return;
+        if (currentPage < totalPages) {
+            setCurrentPage(prev => prev + 1);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    const goPrevPage = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        if (currentPage > 1) {
+            setCurrentPage(prev => prev - 1);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        if (e) e.preventDefault();
+
+        // Multi-page logic: Force "Next" behavior if not on the absolute last page
+        if (isMultiPage && currentPage < totalPages) {
+            goNextPage();
+            return;
+        }
+
+        // final check on required fields across the ENTIRE form before final submit
+        const missingFields = (form?.fields || []).filter(f => {
+            if (!f.required) return false;
+            if (['image', 'video'].includes(f.type)) return false;
+            const val = responses[f.id];
             return val === undefined || val === null || val === '';
         });
 
         if (missingFields.length > 0) {
-            showToast(`Please fill in all required fields: ${missingFields.map(f => f.label).join(', ')}`, "error");
+            // If something is missing, find which page it's on and jump there
+            const firstMissing = missingFields[0];
+            const missingPage = firstMissing.page || 1;
+            if (missingPage !== currentPage) {
+                setCurrentPage(missingPage);
+                showToast(`Required field missing on ${pageLabels[missingPage - 1]}: ${firstMissing.label}`, "error");
+            } else {
+                showToast(`Please fill in all required fields: ${missingFields.map(f => f.label).join(', ')}`, "error");
+            }
             return;
         }
 
@@ -285,6 +356,8 @@ const LiveForm = () => {
         );
     }
 
+
+
     return (
         <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 font-sans transition-colors duration-500" style={{ backgroundColor: form.settings?.secondaryColor || '#F8FAFC' }}>
             <div className="max-w-2xl mx-auto">
@@ -326,8 +399,56 @@ const LiveForm = () => {
                         </div>
                     </div>
 
+                    {/* ── Multi-page Progress Bar ── */}
+                    {isMultiPage && (
+                        <div className="bg-white rounded-[20px] sm:rounded-[24px] border border-slate-100 shadow-lg shadow-slate-200/20 p-5 sm:p-6">
+                            {/* Progress track */}
+                            <div className="relative h-2 bg-slate-100 rounded-full overflow-hidden mb-4">
+                                <div
+                                    className="absolute inset-y-0 left-0 rounded-full transition-all duration-500 ease-out"
+                                    style={{
+                                        width: `${(currentPage / totalPages) * 100}%`,
+                                        backgroundColor: form.settings?.themeColor || '#3713ec'
+                                    }}
+                                />
+                            </div>
+                            {/* Page step indicators */}
+                            <div className="flex items-center justify-between">
+                                {pageLabels.map((label, idx) => {
+                                    const pageNum = idx + 1;
+                                    const isCompleted = pageNum < currentPage;
+                                    const isCurrent = pageNum === currentPage;
+                                    return (
+                                        <div key={idx} className="flex flex-col items-center gap-1.5 flex-1">
+                                            <div
+                                                className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-black transition-all duration-300 ${
+                                                    isCompleted
+                                                        ? 'text-white shadow-md'
+                                                        : isCurrent
+                                                            ? 'text-white shadow-lg scale-110'
+                                                            : 'bg-slate-100 text-slate-400'
+                                                }`}
+                                                style={isCompleted || isCurrent ? {
+                                                    backgroundColor: form.settings?.themeColor || '#3713ec',
+                                                    boxShadow: isCurrent ? `0 4px 12px ${form.settings?.themeColor || '#3713ec'}40` : undefined
+                                                } : {}}
+                                            >
+                                                {isCompleted ? <Check size={14} strokeWidth={3} /> : pageNum}
+                                            </div>
+                                            <span className={`text-[10px] font-black uppercase tracking-wider truncate max-w-[80px] text-center ${
+                                                isCurrent ? 'text-slate-700' : 'text-slate-400'
+                                            }`}>
+                                                {label}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
                     <div className="space-y-4">
-                        {form.fields && form.fields.map((field) => {
+                        {currentPageFields.map((field) => {
                             const isContentField = ['image', 'video'].includes(field.type);
                             return (
                                 <div
@@ -381,29 +502,81 @@ const LiveForm = () => {
                         })}
                     </div>
 
-                    {/* Submit Section */}
+                    {/* Navigation / Submit Section */}
                     <div className="flex flex-col items-center gap-8 pt-4 pb-20">
-                        <button
-                            type="submit"
-                            disabled={submitting}
-                            className={`group relative overflow-hidden text-white px-10 py-4 rounded-[20px] font-black text-lg transition-all 
-                                ${submitting ? 'opacity-70 scale-95 cursor-not-allowed' : 'hover:opacity-90 hover:scale-[1.02] active:scale-95'}`}
-                            style={!submitting ? { backgroundColor: form.settings?.themeColor || '#3713ec', boxShadow: `0 20px 25px -5px ${(form.settings?.themeColor || '#3713ec')}40` } : {}}
-                        >
-                            <div className="relative z-10 flex items-center gap-3">
-                                {submitting ? (
-                                    <>
-                                        <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
-                                        Submitting...
-                                    </>
+                        {isMultiPage ? (
+                            <div className="flex items-center gap-4 w-full max-w-md">
+                                {/* Back Button */}
+                                {currentPage > 1 && (
+                                    <button
+                                        type="button"
+                                        onClick={goPrevPage}
+                                        className="group flex items-center gap-2 px-6 py-4 rounded-[20px] font-black text-lg transition-all border-2 border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700 hover:bg-white"
+                                    >
+                                        <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+                                        Back
+                                    </button>
+                                )}
+                                {/* Next or Submit */}
+                                {currentPage < totalPages ? (
+                                    <button
+                                        type="button"
+                                        onClick={goNextPage}
+                                        className="group flex-1 relative overflow-hidden text-white px-10 py-4 rounded-[20px] font-black text-lg transition-all hover:opacity-90 hover:scale-[1.02] active:scale-95"
+                                        style={{ backgroundColor: form.settings?.themeColor || '#3713ec', boxShadow: `0 20px 25px -5px ${(form.settings?.themeColor || '#3713ec')}40` }}
+                                    >
+                                        <div className="relative z-10 flex items-center justify-center gap-3">
+                                            Next
+                                            <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                                        </div>
+                                    </button>
                                 ) : (
-                                    <>
-                                        {form.settings?.buttonLabel || 'Submit'}
-                                        <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                                    </>
+                                    <button
+                                        type="submit"
+                                        disabled={submitting}
+                                        className={`group flex-1 relative overflow-hidden text-white px-10 py-4 rounded-[20px] font-black text-lg transition-all 
+                                            ${submitting ? 'opacity-70 scale-95 cursor-not-allowed' : 'hover:opacity-90 hover:scale-[1.02] active:scale-95'}`}
+                                        style={!submitting ? { backgroundColor: form.settings?.themeColor || '#3713ec', boxShadow: `0 20px 25px -5px ${(form.settings?.themeColor || '#3713ec')}40` } : {}}
+                                    >
+                                        <div className="relative z-10 flex items-center justify-center gap-3">
+                                            {submitting ? (
+                                                <>
+                                                    <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                                                    Submitting...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    {form.settings?.buttonLabel || 'Submit'}
+                                                    <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                                                </>
+                                            )}
+                                        </div>
+                                    </button>
                                 )}
                             </div>
-                        </button>
+                        ) : (
+                            <button
+                                type="submit"
+                                disabled={submitting}
+                                className={`group relative overflow-hidden text-white px-10 py-4 rounded-[20px] font-black text-lg transition-all 
+                                    ${submitting ? 'opacity-70 scale-95 cursor-not-allowed' : 'hover:opacity-90 hover:scale-[1.02] active:scale-95'}`}
+                                style={!submitting ? { backgroundColor: form.settings?.themeColor || '#3713ec', boxShadow: `0 20px 25px -5px ${(form.settings?.themeColor || '#3713ec')}40` } : {}}
+                            >
+                                <div className="relative z-10 flex items-center gap-3">
+                                    {submitting ? (
+                                        <>
+                                            <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                                            Submitting...
+                                        </>
+                                    ) : (
+                                        <>
+                                            {form.settings?.buttonLabel || 'Submit'}
+                                            <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                                        </>
+                                    )}
+                                </div>
+                            </button>
+                        )}
 
                         {/* Branding & Social Links */}
                         <div className="flex flex-col items-center gap-6 mt-8">
