@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Search, Bell, ChevronDown, LogOut, Menu } from 'lucide-react';
+import { Search, Bell, ChevronDown, LogOut, Menu, FileText, Loader2, ArrowRight, BarChart2, MessageSquare, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import api from '../../lib/api';
@@ -11,6 +11,11 @@ const Navbar = ({ onToggleSidebar }) => {
     const [showDropdown, setShowDropdown] = useState(false);
 
     const [unreadCount, setUnreadCount] = useState(0);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isSearchFocused, setIsSearchFocused] = useState(false);
+    const [searchData, setSearchData] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const searchRef = useRef(null);
 
     const handleLogout = async () => {
         await logout();
@@ -29,6 +34,46 @@ const Navbar = ({ onToggleSidebar }) => {
         return () => clearInterval(interval);
     }, []);
 
+    // Close search popover on outside click
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (searchRef.current && !searchRef.current.contains(event.target)) {
+                setIsSearchFocused(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // Fetch forms for search when focused
+    useEffect(() => {
+        if (isSearchFocused && searchData.length === 0) {
+            setIsSearching(true);
+            api.get('/forms')
+                .then(res => {
+                    if (res.data.success) setSearchData(res.data.data);
+                })
+                .catch(() => {})
+                .finally(() => setIsSearching(false));
+        }
+    }, [isSearchFocused]);
+
+    const q = searchQuery.toLowerCase();
+    const filteredForms = searchData
+        .filter(f => f.title?.toLowerCase().includes(q))
+        .slice(0, 5);
+        
+    const quickLinks = [];
+    if (q && ('analytics'.includes(q) || 'stats'.includes(q))) {
+        quickLinks.push({ id: 'ql-analytics', title: 'Analytics Dashboard', path: '/analytics', icon: <BarChart2 size={18} /> });
+    }
+    if (q && ('responses'.includes(q) || 'submissions'.includes(q))) {
+        quickLinks.push({ id: 'ql-responses', title: 'All Responses', path: '/responses', icon: <MessageSquare size={18} /> });
+    }
+    if (q && ('dashboard'.includes(q) || 'home'.includes(q))) {
+        quickLinks.push({ id: 'ql-dashboard', title: 'Main Dashboard', path: '/', icon: <LayoutDashboard size={18} /> });
+    }
+
     return (
         <header className="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-40">
             {/* Mobile Menu Toggle */}
@@ -40,15 +85,101 @@ const Navbar = ({ onToggleSidebar }) => {
             </button>
 
             {/* Search Bar */}
-            <div className="flex-1 max-w-xl hidden md:block">
+            <div className="flex-1 max-w-xl hidden md:block relative z-50" ref={searchRef}>
                 <div className="relative group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#3713ec] transition-colors" size={20} />
                     <input
                         type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onFocus={() => setIsSearchFocused(true)}
                         placeholder="Search forms, responses or analytics..."
                         className="w-full pl-12 pr-4 py-3 bg-slate-50 border-transparent focus:border-[#3713ec]/20 focus:bg-white focus:ring-4 focus:ring-[#3713ec]/5 rounded-2xl text-slate-600 font-bold placeholder:text-slate-400 transition-all outline-none text-sm"
                     />
                 </div>
+
+                {/* Search Dropdown */}
+                {isSearchFocused && (
+                    <div className="absolute top-full left-0 mt-2 w-full bg-white border border-slate-100 rounded-2xl shadow-xl shadow-slate-200/50 py-3 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                        {isSearching ? (
+                            <div className="flex items-center justify-center py-6 text-slate-400">
+                                <Loader2 className="animate-spin" size={24} />
+                            </div>
+                        ) : searchQuery.length > 0 && filteredForms.length === 0 && quickLinks.length === 0 ? (
+                            <div className="px-4 py-6 text-center text-sm font-bold text-slate-400">
+                                No results found for "{searchQuery}"
+                            </div>
+                        ) : (
+                            <div className="flex flex-col max-h-[400px] overflow-y-auto no-scrollbar">
+                                {searchQuery.length === 0 && (
+                                    <div className="px-4 pb-2 mb-2 border-b border-slate-50 text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                                        Recent Forms
+                                    </div>
+                                )}
+                                
+                                {/* Quick Links */}
+                                {quickLinks.length > 0 && (
+                                    <div className="mb-2">
+                                        <div className="px-4 py-2 text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                                            Quick Links
+                                        </div>
+                                        {quickLinks.map(link => (
+                                            <button
+                                                key={link.id}
+                                                onClick={() => {
+                                                    navigate(link.path);
+                                                    setIsSearchFocused(false);
+                                                    setSearchQuery('');
+                                                }}
+                                                className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors group text-left"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-500 flex items-center justify-center shrink-0 group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                                                        {link.icon}
+                                                    </div>
+                                                    <h4 className="text-sm font-bold text-slate-700 group-hover:text-orange-600 transition-colors">{link.title}</h4>
+                                                </div>
+                                                <ArrowRight size={16} className="text-slate-300 opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all shrink-0" />
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Forms */}
+                                {filteredForms.length > 0 && (
+                                    <>
+                                        {quickLinks.length > 0 && <div className="h-px bg-slate-50 my-2" />}
+                                        <div className="px-4 py-2 text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                                            Forms
+                                        </div>
+                                        {filteredForms.map(form => (
+                                            <button
+                                                key={form._id}
+                                                onClick={() => {
+                                                    navigate(`/forms/create?id=${form._id}`);
+                                                    setIsSearchFocused(false);
+                                                    setSearchQuery('');
+                                                }}
+                                                className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors group text-left"
+                                            >
+                                                <div className="flex items-center gap-3 overflow-hidden">
+                                                    <div className="w-10 h-10 rounded-xl bg-[#3713ec]/5 text-[#3713ec] flex items-center justify-center shrink-0 group-hover:bg-[#3713ec] group-hover:text-white transition-colors">
+                                                        <FileText size={18} />
+                                                    </div>
+                                                    <div className="truncate">
+                                                        <h4 className="text-sm font-bold text-slate-700 truncate group-hover:text-[#3713ec] transition-colors">{form.title}</h4>
+                                                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{form.status}</p>
+                                                    </div>
+                                                </div>
+                                                <ArrowRight size={16} className="text-slate-300 opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all shrink-0" />
+                                            </button>
+                                        ))}
+                                    </>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
             {/* Right Side */}

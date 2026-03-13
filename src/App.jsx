@@ -43,6 +43,7 @@ function App() {
         
         {/* Always Public */}
         <Route path="/form/:id" element={<LiveForm />} />
+        <Route path="/form/:id/response/:responseId" element={<ProtectedRoute><LiveForm /></ProtectedRoute>} />
 
         {/* 404 Catch All */}
         <Route path="*" element={<NotFound />} />

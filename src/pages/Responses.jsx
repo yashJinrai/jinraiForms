@@ -15,59 +15,6 @@ const statusConfig = {
     Flagged: 'bg-red-100 text-red-600',
 };
 
-const ResponseDetailModal = ({ response, onClose }) => {
-    if (!response) return null;
-    return (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4" onClick={onClose}>
-            {/* Backdrop */}
-            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" />
-            
-            <div
-                className="bg-white rounded-t-[2rem] sm:rounded-[2rem] shadow-2xl w-full max-w-md relative overflow-hidden transition-all transform animate-in slide-in-from-bottom sm:slide-in-from-none"
-                onClick={e => e.stopPropagation()}
-            >
-                <div className="p-6 sm:p-8">
-                    <button
-                        onClick={onClose}
-                        className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-all"
-                    >
-                        <X size={18} />
-                    </button>
-
-                    {/* Avatar */}
-                    <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br ${response.avatarColor} flex items-center justify-center text-white font-black text-lg sm:text-xl mb-4 shadow-lg`}>
-                        {response.initials}
-                    </div>
-
-                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight">{response.name}</h2>
-                    <span className={`inline-block mt-2 mb-6 text-[10px] sm:text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${statusConfig[response.status]}`}>
-                        {response.status}
-                    </span>
-
-                    <div className="space-y-3 sm:space-y-4">
-                        <DetailRow icon={<FileText size={16} />} label="Form" value={response.form} />
-                        <DetailRow icon={<Calendar size={16} />} label="Submitted" value={response.date} />
-                        <DetailRow icon={<User size={16} />} label="Submitter" value={response.name} />
-                        <DetailRow icon={<Mail size={16} />} label="Email" value={response.email} />
-                    </div>
-
-                    <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                        <button className="w-full py-3.5 bg-[#3713ec] text-white font-black rounded-xl sm:rounded-2xl hover:bg-[#2a0fd4] transition-all text-[13px] shadow-lg shadow-[#3713ec]/20">
-                            Download PDF
-                        </button>
-                        <button
-                            onClick={onClose}
-                            className="w-full py-3.5 bg-slate-50 text-slate-700 font-black rounded-xl sm:rounded-2xl hover:bg-slate-100 transition-all text-[13px] border border-slate-100"
-                        >
-                            Close
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
 const DetailRow = ({ icon, label, value }) => (
     <div className="flex items-center gap-3">
         <div className="w-8 h-8 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 flex-shrink-0">
@@ -85,7 +32,6 @@ const Responses = () => {
     const filterFormId = searchParams.get('formId');
     const [activeTab, setActiveTab] = useState('All Responses');
     const [page, setPage] = useState(1);
-    const [selectedResponse, setSelectedResponse] = useState(null);
     const [responses, setResponses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [formName, setFormName] = useState('');
@@ -116,6 +62,7 @@ const Responses = () => {
 
                     return {
                         id: r._id,
+                        formId: r.formId?._id || filterFormId,
                         initials: initials,
                         name: r.submitterName || 'Anonymous',
                         email: r.submitterEmail || 'anonymous@example.com',
@@ -233,12 +180,14 @@ const Responses = () => {
                                         </td>
                                         <td className="px-6 py-4 text-[13px] font-bold text-slate-500">{r.date}</td>
                                         <td className="px-6 py-4">
-                                            <button
-                                                onClick={() => setSelectedResponse(r)}
+                                            <a
+                                                href={`/form/${r.formId}/response/${r.id}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
                                                 className="text-[13px] font-black text-[#3713ec] hover:text-[#2a0fd4] transition-colors hover:underline underline-offset-2"
                                             >
                                                 View Details
-                                            </button>
+                                            </a>
                                         </td>
                                     </tr>
                                 ))}
@@ -284,9 +233,6 @@ const Responses = () => {
                     </div>
                 </div>
             </div>
-
-            {/* Response Detail Modal */}
-            <ResponseDetailModal response={selectedResponse} onClose={() => setSelectedResponse(null)} />
         </DashboardLayout>
     );
 };

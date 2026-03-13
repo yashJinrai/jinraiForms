@@ -5,7 +5,7 @@ import {
     Check, AlertCircle, ChevronRight, ChevronLeft,
     Upload, Calendar, Star, Send, Clock, Palette,
     User, Mail, Instagram, Facebook, MessageCircle, Twitter, Globe,
-    Layers
+    Layers, Download, Printer
 } from 'lucide-react';
 import { useNotification } from '../context/NotificationContext';
 import logo from '../assets/images/JLogobg.png';
@@ -17,12 +17,14 @@ const formatSocialLink = (url) => {
 };
 
 const LiveForm = () => {
-    const { id } = useParams();
+    const { id, responseId } = useParams();
     const navigate = useNavigate();
     const { showToast } = useNotification();
     const [form, setForm] = useState(null);
     const [responses, setResponses] = useState({});
+    const [submitter, setSubmitter] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isReadOnly, setIsReadOnly] = useState(!!responseId);
     const [submitting, setSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState(null);
@@ -34,8 +36,48 @@ const LiveForm = () => {
     const viewTracked = useRef(false);
 
     useEffect(() => {
-        fetchForm();
-    }, [id]);
+        if (responseId) {
+            fetchResponse();
+        } else {
+            fetchForm();
+        }
+    }, [id, responseId]);
+
+    const fetchResponse = async () => {
+        try {
+            setLoading(true);
+            const res = await api.get(`/forms/responses/${responseId}`);
+            if (res.data.success) {
+                const responseData = res.data.data;
+                setForm(responseData.formId); // Populated in service
+                
+                // Pre-fill responses from answers array
+                const preppedResponses = {};
+                if (responseData.answers) {
+                    responseData.answers.forEach(a => {
+                        preppedResponses[a.id] = a.value;
+                    });
+                }
+                setResponses(preppedResponses);
+                setSubmitter({
+                    name: responseData.submitterName,
+                    email: responseData.submitterEmail,
+                    date: responseData.createdAt,
+                    status: responseData.completionType
+                });
+                setIsReadOnly(true);
+            }
+        } catch (err) {
+            console.error("Error fetching response:", err);
+            setError("Failed to load response data.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDownload = () => {
+        window.print();
+    };
 
     const fetchForm = async (pass = null, email = null) => {
         try {
@@ -406,6 +448,43 @@ const LiveForm = () => {
                         </div>
                     </div>
 
+                    {/* Submitter Details (Only for Read-only Mode) */}
+                    {isReadOnly && submitter && (
+                        <div className="bg-gradient-to-br from-indigo-50 to-blue-50/30 rounded-[24px] border border-indigo-100/50 p-6 sm:p-8 shadow-sm">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                                <div className="flex items-center gap-5">
+                                    <div className="w-16 h-16 rounded-3xl bg-white shadow-md flex items-center justify-center text-[#3713ec] flex-shrink-0">
+                                        <User size={30} strokeWidth={2.5} />
+                                    </div>
+                                    <div>
+                                        <p className="text-[11px] font-black text-[#3713ec] uppercase tracking-[0.2em] mb-1">Submitter Details</p>
+                                        <h2 className="text-xl font-black text-slate-900">{submitter.name}</h2>
+                                        <p className="text-[13px] font-bold text-slate-500 flex items-center gap-1.5 mt-0.5">
+                                            <Mail size={13} /> {submitter.email}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <div className="bg-white/80 backdrop-blur-sm px-4 py-2 rounded-2xl border border-indigo-100 flex items-center gap-2">
+                                        <Clock size={14} className="text-indigo-500" />
+                                        <span className="text-[12px] font-black text-slate-600 uppercase">
+                                            {new Date(submitter.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                        </span>
+                                    </div>
+                                    <div className={`px-4 py-2 rounded-2xl border flex items-center gap-2 ${
+                                        submitter.status === 'full' 
+                                            ? 'bg-emerald-50 border-emerald-100 text-emerald-600' 
+                                            : 'bg-amber-50 border-amber-100 text-amber-600'
+                                    }`}>
+                                        <div className={`w-2 h-2 rounded-full ${submitter.status === 'full' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                        <span className="text-[12px] font-black uppercase tracking-wider">{submitter.status === 'full' ? 'Full Submission' : 'Partial'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+
                     {/* ── Multi-page Progress Bar ── */}
                     {isMultiPage && (
                         <div className="bg-white rounded-[20px] sm:rounded-[24px] border border-slate-100 shadow-lg shadow-slate-200/20 p-5 sm:p-6">
@@ -503,17 +582,44 @@ const LiveForm = () => {
                                             </p>
                                         )}
                                     </div>
-                                    {renderField(field, handleInputChange, responses[field.id], form.settings?.themeColor)}
+                                    {renderField(field, handleInputChange, responses[field.id], form.settings?.themeColor, isReadOnly)}
                                 </div>
                             );
                         })}
                     </div>
 
                     {/* Navigation / Submit Section */}
-                    <div className="flex flex-col items-center gap-8 pt-4 pb-20">
-                        {isMultiPage ? (
+                    <div className="flex flex-col items-center gap-8 pt-4 pb-20 no-print">
+                        {isReadOnly ? (
+                            <div className="flex flex-col items-center gap-4 w-full max-w-md">
+                                <div className="bg-amber-50 border border-amber-200 p-4 rounded-3xl flex items-center gap-4 text-amber-800 w-full shadow-sm">
+                                    <div className="w-10 h-10 bg-amber-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+                                        <Clock size={20} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-[14px] font-black">Read-only Mode</p>
+                                        <p className="text-[12px] font-bold opacity-80">Viewing a submitted response</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3 w-full">
+                                    <button
+                                        onClick={() => navigate(-1)}
+                                        className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-white border-2 border-slate-200 text-slate-600 font-black rounded-[20px] hover:bg-slate-50 transition-all"
+                                    >
+                                        <ChevronLeft size={18} />
+                                        Back
+                                    </button>
+                                    <button
+                                        onClick={handleDownload}
+                                        className="flex-[2] flex items-center justify-center gap-2.5 px-6 py-4 bg-[#3713ec] hover:bg-[#2a0fd4] text-white font-black rounded-[20px] shadow-xl shadow-[#3713ec]/25 transition-all group"
+                                    >
+                                        <Printer size={18} className="transition-transform group-hover:scale-110" />
+                                        Print / PDF
+                                    </button>
+                                </div>
+                            </div>
+                        ) : isMultiPage ? (
                             <div className="flex items-center gap-4 w-full max-w-md">
-                                {/* Back Button */}
                                 {currentPage > 1 && (
                                     <button
                                         type="button"
@@ -524,7 +630,6 @@ const LiveForm = () => {
                                         Back
                                     </button>
                                 )}
-                                {/* Next or Submit */}
                                 {currentPage < totalPages ? (
                                     <button
                                         type="button"
@@ -547,10 +652,7 @@ const LiveForm = () => {
                                     >
                                         <div className="relative z-10 flex items-center justify-center gap-3">
                                             {submitting ? (
-                                                <>
-                                                    <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
-                                                    Submitting...
-                                                </>
+                                                <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
                                             ) : (
                                                 <>
                                                     {form.settings?.buttonLabel || 'Submit'}
@@ -571,10 +673,7 @@ const LiveForm = () => {
                             >
                                 <div className="relative z-10 flex items-center gap-3">
                                     {submitting ? (
-                                        <>
-                                            <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
-                                            Submitting...
-                                        </>
+                                        <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />
                                     ) : (
                                         <>
                                             {form.settings?.buttonLabel || 'Submit'}
@@ -584,6 +683,7 @@ const LiveForm = () => {
                                 </div>
                             </button>
                         )}
+                    </div>
 
                         {/* Branding & Social Links */}
                         <div className="flex flex-col items-center gap-6 mt-8">
@@ -649,15 +749,14 @@ const LiveForm = () => {
                                 <span className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase text-center px-4">Built for Modern Data Collection</span>
                             </div>
                         </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
-        </div>
-    );
-};
+        );
+    };
 
-const renderField = (field, onChange, value = '', themeColor = '#3713ec') => {
-    const inputBase = `w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-slate-900 font-bold placeholder:text-slate-400 outline-none focus:ring-4 transition-all duration-300`;
+const renderField = (field, onChange, value = '', themeColor = '#3713ec', readOnly = false) => {
+    const inputBase = `w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 py-4 text-slate-900 font-bold placeholder:text-slate-400 outline-none focus:ring-4 transition-all duration-300 ${readOnly ? 'opacity-70 cursor-not-allowed' : ''}`;
     const themeShadow = `0 0 0 4px ${themeColor}10`;
 
     switch (field.type) {
@@ -673,6 +772,7 @@ const renderField = (field, onChange, value = '', themeColor = '#3713ec') => {
                     required={field.required}
                     value={value}
                     onChange={(e) => onChange(field.id, e.target.value)}
+                    disabled={readOnly}
                 />
             );
         case 'paragraph':
@@ -685,6 +785,7 @@ const renderField = (field, onChange, value = '', themeColor = '#3713ec') => {
                     required={field.required}
                     value={value}
                     onChange={(e) => onChange(field.id, e.target.value)}
+                    disabled={readOnly}
                 />
             );
         case 'multiple_choice':
@@ -693,9 +794,9 @@ const renderField = (field, onChange, value = '', themeColor = '#3713ec') => {
                     {(field.options && field.options.length > 0 ? field.options : ['Option 1', 'Option 2', 'Option 3']).map((option, idx) => (
                         <label
                             key={idx}
-                            className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200`}
+                            className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-200 ${readOnly ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}
                             style={value === option ? { borderColor: themeColor, backgroundColor: `${themeColor}05` } : { borderColor: '#f8fafc', backgroundColor: '#f8fafc' }}
-                            onClick={() => onChange(field.id, option)}
+                            onClick={() => !readOnly && onChange(field.id, option)}
                         >
                             <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all`}
                                 style={value === option ? { borderColor: themeColor, backgroundColor: themeColor } : { borderColor: '#cbd5e1', backgroundColor: 'white' }}>
@@ -731,9 +832,9 @@ const renderField = (field, onChange, value = '', themeColor = '#3713ec') => {
                     {(field.options && field.options.length > 0 ? field.options : ['Option 1', 'Option 2']).map((option, idx) => (
                         <label
                             key={idx}
-                            className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200`}
+                            className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-200 ${readOnly ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}
                             style={selectedArr.includes(option) ? { borderColor: themeColor, backgroundColor: `${themeColor}05` } : { borderColor: '#f8fafc', backgroundColor: '#f8fafc' }}
-                            onClick={() => toggleValue(option)}
+                            onClick={() => !readOnly && toggleValue(option)}
                         >
                             <div className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all`}
                                 style={selectedArr.includes(option) ? { borderColor: themeColor, backgroundColor: themeColor } : { borderColor: '#cbd5e1', backgroundColor: 'white' }}>
@@ -769,6 +870,7 @@ const renderField = (field, onChange, value = '', themeColor = '#3713ec') => {
                     value={value}
                     onChange={(e) => onChange(field.id, e.target.value)}
                     required={field.required}
+                    disabled={readOnly}
                 >
                     <option value="" disabled>Select an option</option>
                     {(field.options && field.options.length > 0 ? field.options : ['Option 1', 'Option 2']).map((option, idx) => (

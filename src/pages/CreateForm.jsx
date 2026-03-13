@@ -408,8 +408,9 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
             const formData = new FormData();
             formData.append('image', file);
             const res = await onUpload(formData);
-            const serverUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api/v1/jinraiForm', '') : 'http://localhost:5002';
-            const imageUrl = `${serverUrl}${res.data.url}`;
+            const imageUrl = res.data.url.startsWith('http') 
+                ? res.data.url 
+                : `${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api/v1/jinraiForm', '') : 'http://localhost:5002'}${res.data.url}`;
 
             if (target === 'banner') {
                 setSettings(s => ({ ...s, bannerImage: imageUrl }));

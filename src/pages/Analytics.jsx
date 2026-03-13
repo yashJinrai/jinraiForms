@@ -5,7 +5,7 @@ import DashboardLayout from '../components/layout/DashboardLayout';
 import {
     TrendingUp, TrendingDown, Eye, Send, Zap, Users,
     MoreHorizontal, ChevronDown, Monitor, Smartphone, Tablet,
-    ArrowUpRight, Filter, Download
+    ArrowUpRight, Filter, Search, FileText
 } from 'lucide-react';
 
 /* ─────────────────────── Constants / Mock Data ─────────────────────── */
@@ -29,7 +29,8 @@ const LineChart = ({ data, color = '#3713ec', fillColor = 'rgba(55,19,236,0.08)'
     const innerH = H - PAD.top - PAD.bottom;
 
     const dataValues = data.map(d => d.value);
-    const maxVal = dataValues.length > 0 ? Math.max(...dataValues, 5) : 5; // Default max to 5 if empty or 0
+    const maxDataVal = dataValues.length > 0 ? Math.max(...dataValues, 0) : 0;
+    const maxVal = maxDataVal > 0 ? maxDataVal : 5; // Default max to 5 so y-axis looks normal if data is 0
     const minVal = 0;
 
     const xScale = (i) => {
@@ -38,18 +39,18 @@ const LineChart = ({ data, color = '#3713ec', fillColor = 'rgba(55,19,236,0.08)'
     };
     const yScale = (v) => {
         const range = maxVal - minVal;
-        if (range === 0) return PAD.top + innerH;
+        if (range === 0) return PAD.top + innerH; // Fallback
         return PAD.top + innerH - ((v - minVal) / range) * innerH;
     };
 
-    const points = data.map((d, i) => `${xScale(i)},${yScale(d.value)}`).join(' ');
-    const areaPoints = [
+    const points = data.length > 0 ? data.map((d, i) => `${xScale(i)},${yScale(d.value)}`).join(' ') : "";
+    const areaPoints = data.length > 0 ? [
         `${xScale(0)},${H - PAD.bottom}`,
         ...data.map((d, i) => `${xScale(i)},${yScale(d.value)}`),
         `${xScale(data.length - 1)},${H - PAD.bottom}`,
-    ].join(' ');
+    ].join(' ') : "";
 
-    const yTicks = 4;
+    const yTicks = maxVal > 5 ? 5 : Math.max(maxVal, 1);
     const [hovered, setHovered] = useState(null);
 
     return (
@@ -72,7 +73,13 @@ const LineChart = ({ data, color = '#3713ec', fillColor = 'rgba(55,19,236,0.08)'
 
                 {/* Y-axis grid lines */}
                 {Array.from({ length: yTicks + 1 }, (_, i) => {
-                    const v = Math.round((maxVal / yTicks) * i);
+                    let v = 0;
+                    if (maxVal <= 5) {
+                        v = i; // Map 1:1 if 5 or less
+                    } else {
+                        v = Math.round((maxVal / yTicks) * i);
+                    }
+                    
                     const y = yScale(v);
                     return (
                         <g key={i}>
@@ -96,11 +103,13 @@ const LineChart = ({ data, color = '#3713ec', fillColor = 'rgba(55,19,236,0.08)'
                 })}
 
                 {/* Area fill */}
-                <polygon points={areaPoints} fill={`url(#grad-${label})`} />
+                {data.length > 0 && <polygon points={areaPoints} fill={`url(#grad-${label})`} />}
 
                 {/* Line */}
-                <polyline points={points} fill="none" stroke={color}
-                    strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+                {data.length > 0 && (
+                    <polyline points={points} fill="none" stroke={color}
+                        strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+                )}
 
                 {/* Data points + hover targets */}
                 {data.map((d, i) => (
@@ -109,8 +118,9 @@ const LineChart = ({ data, color = '#3713ec', fillColor = 'rgba(55,19,236,0.08)'
                         <circle
                             cx={xScale(i)} cy={yScale(d.value)}
                             r={hovered === i ? 5 : 3.5}
-                            fill="white" stroke={color}
-                            strokeWidth="2.5"
+                            fill={d.value === 0 && maxDataVal === 0 ? color : "white"} 
+                            stroke={color}
+                            strokeWidth={d.value === 0 && maxDataVal === 0 ? "0" : "2.5"}
                             style={{ transition: 'r 0.15s' }}
                             filter={hovered === i ? 'url(#glow)' : undefined}
                         />
@@ -118,13 +128,13 @@ const LineChart = ({ data, color = '#3713ec', fillColor = 'rgba(55,19,236,0.08)'
                             <g>
                                 <rect
                                     x={Math.min(xScale(i) - 28, W - PAD.right - 60)}
-                                    y={yScale(d.value) - 34}
+                                    y={Math.max(yScale(d.value) - 34, PAD.top)}
                                     width="58" height="22" rx="8"
                                     fill="#1e293b"
                                 />
                                 <text
                                     x={Math.min(xScale(i) + 1, W - PAD.right - 28)}
-                                    y={yScale(d.value) - 19}
+                                    y={Math.max(yScale(d.value) - 19, PAD.top + 15)}
                                     textAnchor="middle"
                                     fontSize="11" fill="white" fontWeight="bold"
                                 >
@@ -135,6 +145,11 @@ const LineChart = ({ data, color = '#3713ec', fillColor = 'rgba(55,19,236,0.08)'
                     </g>
                 ))}
             </svg>
+            {data.length === 0 && (
+                <div className="absolute inset-0 flex items-center justify-center text-[12px] font-bold text-slate-400">
+                    No data available for this period
+                </div>
+            )}
         </div>
     );
 };
@@ -142,7 +157,8 @@ const LineChart = ({ data, color = '#3713ec', fillColor = 'rgba(55,19,236,0.08)'
 /* ─────────────────────── Horizontal Bar Chart ─────────────────────── */
 const BarChart = ({ data }) => {
     const dataValues = data.map(d => d.responses);
-    const maxVal = dataValues.length > 0 ? Math.max(...dataValues, 1) : 1;
+    const maxDataVal = dataValues.length > 0 ? Math.max(...dataValues, 0) : 0;
+    const maxVal = maxDataVal > 0 ? maxDataVal : 1; // Default to 1 to avoid divide by zero
     return (
         <div className="space-y-4">
             {data.map((d, i) => (
@@ -298,8 +314,17 @@ const Analytics = () => {
     const navigate = useNavigate();
     const [range, setRange] = useState('Last 30 days');
     const [rangeOpen, setRangeOpen] = useState(false);
-    const [activeChart, setActiveChart] = useState('responses');
     const [loading, setLoading] = useState(true);
+    const [selectedFormId, setSelectedFormId] = useState('all');
+    const [formsList, setFormsList] = useState([]);
+    
+    // Search combobox state
+    const [formSearchOpen, setFormSearchOpen] = useState(false);
+    const [formSearchQuery, setFormSearchQuery] = useState('');
+    
+    // Close dropdowns when clicking outside
+    const formSearchRef = React.useRef(null);
+    const rangeRef = React.useRef(null);
     const [data, setData] = useState({
         responseTrend: [],
         formPerformance: [],
@@ -314,10 +339,32 @@ const Analytics = () => {
     const [endDate, setEndDate] = useState('');
 
     useEffect(() => {
+        // Fetch forms for the filter dropdown
+        api.get('/forms').then(res => {
+            if (res.data.success) {
+                setFormsList(res.data.data.map(f => ({ id: f._id, title: f.title })));
+            }
+        }).catch(err => console.error(err));
+    }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (formSearchRef.current && !formSearchRef.current.contains(e.target)) {
+                setFormSearchOpen(false);
+            }
+            if (rangeRef.current && !rangeRef.current.contains(e.target)) {
+                setRangeOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    useEffect(() => {
         const fetchAnalytics = async () => {
             try {
                 setLoading(true);
-                let url = `/forms/analytics?range=${range}`;
+                let url = `/forms/analytics?range=${range}&formId=${selectedFormId}`;
                 if (range === 'Custom' && startDate && endDate) {
                     url += `&startDate=${startDate}&endDate=${endDate}`;
                 }
@@ -333,10 +380,7 @@ const Analytics = () => {
         if (range !== 'Custom' || (startDate && endDate)) {
             fetchAnalytics();
         }
-    }, [range, startDate, endDate]);
-
-    const chartData = activeChart === 'responses' ? (data.responseTrend || []) : [];
-    const chartColor = activeChart === 'responses' ? '#3713ec' : '#8b5cf6';
+    }, [range, startDate, endDate, selectedFormId]);
 
     // Dynamic Funnel Data
     const dynamicFunnel = [
@@ -389,7 +433,7 @@ const Analytics = () => {
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
                         {/* Date range picker */}
-                        <div className="relative">
+                        <div className="relative" ref={rangeRef}>
                             <button
                                 onClick={() => setRangeOpen(o => !o)}
                                 className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] font-black text-slate-600 hover:border-[#3713ec]/40 hover:bg-[#3713ec]/[0.03] transition-all shadow-sm"
@@ -420,6 +464,93 @@ const Analytics = () => {
                                             {opt}
                                         </button>
                                     ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Form Search Dropdown */}
+                        <div className="relative" ref={formSearchRef}>
+                            <button
+                                onClick={() => setFormSearchOpen(o => !o)}
+                                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] font-black text-slate-600 hover:border-[#3713ec]/40 hover:bg-[#3713ec]/[0.03] transition-all shadow-sm w-full md:w-[220px]"
+                            >
+                                <div className="truncate flex-1 text-left">
+                                    {selectedFormId === 'all' 
+                                        ? 'All Forms' 
+                                        : formsList.find(f => f.id === selectedFormId)?.title || 'All Forms'}
+                                </div>
+                                <ChevronDown size={14} className={`text-slate-400 shrink-0 transition-transform ${formSearchOpen ? 'rotate-180' : ''}`} />
+                            </button>
+
+                            {formSearchOpen && (
+                                <div className="absolute right-0 top-12 bg-white border border-slate-100 rounded-2xl shadow-2xl shadow-slate-200/80 w-[280px] z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                                    <div className="p-2 border-b border-slate-50">
+                                        <div className="bg-slate-50 rounded-xl flex items-center px-3 py-2">
+                                            <Search size={14} className="text-slate-400 mr-2 shrink-0" />
+                                            <input 
+                                                type="text" 
+                                                autoFocus
+                                                placeholder="Search forms..."
+                                                value={formSearchQuery}
+                                                onChange={(e) => setFormSearchQuery(e.target.value)}
+                                                className="bg-transparent border-none text-[13px] font-bold text-slate-700 focus:ring-0 p-0 w-full outline-none placeholder:text-slate-400"
+                                            />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="max-h-[260px] overflow-y-auto no-scrollbar py-2">
+                                        <button
+                                            onClick={() => {
+                                                setSelectedFormId('all');
+                                                setFormSearchOpen(false);
+                                                setFormSearchQuery('');
+                                            }}
+                                            className={`w-full flex items-center px-4 py-2.5 text-left transition-colors ${selectedFormId === 'all' ? 'bg-[#3713ec]/5' : 'hover:bg-slate-50'}`}
+                                        >
+                                            <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center mr-3 shrink-0">
+                                                <FileText size={14} className="text-slate-500" />
+                                            </div>
+                                            <div className="flex-1 truncate">
+                                                <div className={`text-[13px] font-bold ${selectedFormId === 'all' ? 'text-[#3713ec]' : 'text-slate-700'}`}>
+                                                    All Forms
+                                                </div>
+                                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">
+                                                    Overview
+                                                </div>
+                                            </div>
+                                        </button>
+                                        
+                                        {formsList.length > 0 && <div className="h-px bg-slate-50 my-1 mx-4" />}
+
+                                        {formsList
+                                            .filter(f => f.title.toLowerCase().includes(formSearchQuery.toLowerCase()))
+                                            .map(f => (
+                                            <button
+                                                key={f.id}
+                                                onClick={() => {
+                                                    setSelectedFormId(f.id);
+                                                    setFormSearchOpen(false);
+                                                    setFormSearchQuery('');
+                                                }}
+                                                className={`w-full flex items-center px-4 py-2.5 text-left transition-colors group ${selectedFormId === f.id ? 'bg-[#3713ec]/5' : 'hover:bg-slate-50'}`}
+                                            >
+                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center mr-3 shrink-0 transition-colors ${selectedFormId === f.id ? 'bg-[#3713ec] text-white' : 'bg-[#3713ec]/5 text-[#3713ec] group-hover:bg-[#3713ec] group-hover:text-white'}`}>
+                                                    <FileText size={14} />
+                                                </div>
+                                                <div className="flex-1 truncate">
+                                                    <div className={`text-[13px] font-bold truncate transition-colors ${selectedFormId === f.id ? 'text-[#3713ec]' : 'text-slate-700 group-hover:text-[#3713ec]'}`}>
+                                                        {f.title}
+                                                    </div>
+                                                </div>
+                                            </button>
+                                        ))}
+
+                                        {formsList.filter(f => f.title.toLowerCase().includes(formSearchQuery.toLowerCase())).length === 0 && (
+                                            <div className="px-4 py-6 text-center text-[12px] font-bold text-slate-400">
+                                                No forms found
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -497,31 +628,17 @@ const Analytics = () => {
                                 <h2 className="text-[17px] font-black text-slate-900">Response Trend</h2>
                                 <p className="text-[12px] text-slate-400 font-bold mt-0.5">{range}</p>
                             </div>
-                            <div className="flex items-center bg-slate-50 border border-slate-100 rounded-xl p-1">
-                                {['responses', 'views'].map(t => (
-                                    <button
-                                        key={t}
-                                        onClick={() => setActiveChart(t)}
-                                        className={`px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all ${activeChart === t
-                                            ? 'bg-white text-[#3713ec] shadow-sm'
-                                            : 'text-slate-400 hover:text-slate-600'
-                                            }`}
-                                    >
-                                        {t}
-                                    </button>
-                                ))}
-                            </div>
                         </div>
 
                         {/* Legend */}
                         <div className="flex items-center gap-4 mb-4">
                             <div className="flex items-center gap-2">
-                                <div className="w-6 h-0.5 rounded-full" style={{ backgroundColor: chartColor }} />
-                                <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider capitalize">{activeChart}</span>
+                                <div className="w-6 h-0.5 rounded-full" style={{ backgroundColor: '#3713ec' }} />
+                                <span className="text-[11px] font-black text-slate-500 uppercase tracking-wider capitalize">Responses</span>
                             </div>
                         </div>
 
-                        <LineChart data={chartData} color={chartColor} label={activeChart} />
+                        <LineChart data={data.responseTrend || []} color="#3713ec" label="responses" />
                     </div>
 
                     {/* Device breakdown */}

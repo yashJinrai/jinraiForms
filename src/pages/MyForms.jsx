@@ -25,7 +25,7 @@ const statusConfig = {
     Archived: { label: 'ARCHIVED', className: 'bg-amber-100 text-amber-600' },
 };
 
-const FormCard = ({ form, onEdit, onDelete, onDuplicate }) => {
+const FormCard = ({ form, onEdit, onDelete, onDuplicate, onArchiveToggle, onShare }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const cfg = statusConfig[form.status] || statusConfig['Draft'];
     const isDraft = form.status === 'Draft';
@@ -56,9 +56,6 @@ const FormCard = ({ form, onEdit, onDelete, onDuplicate }) => {
                         <p className="text-2xl font-black text-slate-900">{(form.responsesCount || 0).toLocaleString()}</p>
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Responses</p>
                     </div>
-                    <button className="p-1.5 text-slate-300 hover:text-slate-500 transition-colors">
-                        <Edit2 size={15} />
-                    </button>
                 </div>
 
                 {/* Actions */}
@@ -69,7 +66,11 @@ const FormCard = ({ form, onEdit, onDelete, onDuplicate }) => {
                     >
                         <Edit2 size={13} /> {isDraft ? 'Continue' : 'Edit'}
                     </button>
-                    <button className="p-2 bg-slate-50 text-slate-500 hover:bg-slate-100 rounded-xl transition-all">
+                    <button 
+                        onClick={() => onShare(form._id)}
+                        className="p-2 bg-slate-50 text-slate-500 hover:bg-slate-100 rounded-xl transition-all"
+                        title="Copy Form Link"
+                    >
                         <Share2 size={15} />
                     </button>
                     {/* Three-dot menu */}
@@ -82,9 +83,9 @@ const FormCard = ({ form, onEdit, onDelete, onDuplicate }) => {
                         </button>
                         {menuOpen && (
                             <div className="absolute right-0 bottom-10 bg-white border border-slate-100 rounded-2xl shadow-2xl shadow-slate-200/80 py-2 w-44 z-50">
-                                <MenuItem 
-                                    icon={<Copy size={14} />} 
-                                    label="Duplicate" 
+                                <MenuItem
+                                    icon={<Copy size={14} />}
+                                    label="Duplicate"
                                     onClick={() => { onDuplicate(form._id); setMenuOpen(false); }}
                                 />
                                 <MenuItem
@@ -95,7 +96,11 @@ const FormCard = ({ form, onEdit, onDelete, onDuplicate }) => {
                                         setMenuOpen(false);
                                     }}
                                 />
-                                <MenuItem icon={<Archive size={14} />} label="Archive" />
+                                <MenuItem
+                                    icon={<Archive size={14} />}
+                                    label={form.status === 'Archived' ? 'Unarchive' : 'Archive'}
+                                    onClick={() => { onArchiveToggle(form._id, form.status); setMenuOpen(false); }}
+                                />
                                 <div className="h-px bg-slate-100 my-1" />
                                 <MenuItem
                                     icon={<Trash2 size={14} />}
@@ -164,7 +169,7 @@ const MyForms = () => {
 
     const filtered = forms.filter(f => {
         const matchesTab =
-            activeTab === 'All Forms' ? true :
+            activeTab === 'All Forms' ? f.status !== 'Archived' :
                 activeTab === 'Active' ? f.status === 'Active' :
                     activeTab === 'Drafts' ? f.status === 'Draft' :
                         activeTab === 'Archived' ? f.status === 'Archived' : true;
@@ -207,8 +212,50 @@ const MyForms = () => {
             showToast("Failed to delete form", "error");
         }
     };
+
+    const handleArchiveToggle = async (id, currentStatus) => {
+        try {
+            const newStatus = currentStatus === 'Archived' ? 'Draft' : 'Archived';
+            const res = await api.put(`/forms/${id}`, { status: newStatus });
+            if (res.data.success) {
+                setForms(prev => prev.map(f => f._id === id ? { ...f, status: newStatus } : f));
+                showToast(`Form ${newStatus === 'Archived' ? 'archived' : 'unarchived'} successfully`);
+            }
+        } catch (error) {
+            console.error("Failed to update form status", error);
+            showToast("Failed to update form status", "error");
+        }
+    };
     const handleEdit = (id) => navigate(`/forms/create?id=${id}`);
     const handleCreate = () => navigate('/forms/create');
+
+    const handleShare = (id) => {
+        const url = `${window.location.origin}/form/${id}`;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(url)
+                .then(() => showToast("Form link copied to clipboard!"))
+                .catch(() => {
+                    fallbackCopyTextToClipboard(url);
+                });
+        } else {
+            fallbackCopyTextToClipboard(url);
+        }
+    };
+
+    const fallbackCopyTextToClipboard = (text) => {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            showToast("Form link copied to clipboard!");
+        } catch (err) {
+            showToast("Failed to copy link", "error");
+        }
+        document.body.removeChild(textArea);
+    };
 
     return (
         <DashboardLayout>
@@ -255,7 +302,15 @@ const MyForms = () => {
                     <>
                         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                             {filtered.map(form => (
-                                <FormCard key={form._id} form={form} onEdit={handleEdit} onDelete={handleDelete} onDuplicate={handleDuplicate} />
+                                <FormCard
+                                    key={form._id}
+                                    form={form}
+                                    onEdit={handleEdit}
+                                    onDelete={handleDelete}
+                                    onDuplicate={handleDuplicate}
+                                    onArchiveToggle={handleArchiveToggle}
+                                    onShare={handleShare}
+                                />
                             ))}
                             <NewFormCard onCreate={handleCreate} />
                         </div>
