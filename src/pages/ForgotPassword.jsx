@@ -135,17 +135,17 @@ const ForgotPassword = () => {
             </div>
 
             {/* Right Side: Step Content Area */}
-            <div className="w-full lg:w-1/2 flex flex-col justify-center items-center px-8 py-16">
+            <div className="w-full lg:w-1/2 flex flex-col justify-center items-center px-8 py-16 bg-white dark:bg-[#0f0e17] transition-colors">
                 <div className="w-full max-w-[440px] space-y-12">
 
 
                     {/* Step Flow Header */}
                     {step < 4 && (
                         <div className="space-y-4">
-                            <h2 className="text-4xl font-black text-[#0F172A] tracking-tighter">
+                            <h2 className="text-4xl font-black text-[#0F172A] dark:text-white tracking-tighter">
                                 {currentInfo.title}
                             </h2>
-                            <p className="text-slate-400 text-md leading-relaxed font-medium">
+                            <p className="text-slate-400 dark:text-slate-500 text-md leading-relaxed font-medium">
                                 {currentInfo.desc}
                             </p>
                         </div>

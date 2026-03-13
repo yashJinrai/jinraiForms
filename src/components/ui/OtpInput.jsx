@@ -2,7 +2,7 @@ const OtpInput = ({ length = 6, value, onChange, className = "" }) => {
     const inputs = Array.from({ length }, (_, i) => (
         <input
             key={i}
-            className={`w-12 h-14 md:w-14 md:h-16 text-center text-2xl font-semibold border-2 border-slate-200 bg-slate-50 focus:border-[#3713EC] focus:ring-4 focus:ring-[#3713EC]/10 transition-all shadow-sm rounded-xl flex-1 ${className}`}
+            className={`w-12 h-14 md:w-14 md:h-16 text-center text-2xl font-semibold border-2 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:border-[#3713EC] focus:ring-4 focus:ring-[#3713EC]/10 transition-all shadow-sm rounded-xl flex-1 ${className}`}
             maxLength={1}
             type="text"
             inputMode="numeric"

@@ -149,20 +149,20 @@ const Notifications = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                     <div className="text-center sm:text-left">
                         <div className="flex flex-col sm:flex-row items-center gap-3">
-                            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Notifications</h1>
+                            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">Notifications</h1>
                             {unreadCount > 0 && (
                                 <span className="px-3 py-1 bg-[#3713ec] text-white text-[12px] font-black rounded-full">
                                     {unreadCount} new
                                 </span>
                             )}
                         </div>
-                        <p className="text-slate-500 font-bold text-sm mt-2 sm:mt-1">Stay updated with your form activity</p>
+                        <p className="text-slate-500 dark:text-slate-400 font-bold text-sm mt-2 sm:mt-1">Stay updated with your form activity</p>
                     </div>
                     <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 w-full sm:w-auto">
                         {unreadCount > 0 && (
                             <button
                                 onClick={handleMarkAllRead}
-                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-black rounded-2xl transition-all text-[12px] sm:text-[13px]"
+                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-black rounded-2xl transition-all text-[12px] sm:text-[13px]"
                             >
                                 <CheckCheck size={16} />
                                 <span className="whitespace-nowrap">Mark All Read</span>
@@ -171,7 +171,7 @@ const Notifications = () => {
                         {notifications.length > 0 && (
                             <button
                                 onClick={handleClearAll}
-                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 bg-rose-50 hover:bg-rose-100 text-rose-600 font-black rounded-2xl transition-all text-[12px] sm:text-[13px]"
+                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-500 font-black rounded-2xl transition-all text-[12px] sm:text-[13px]"
                             >
                                 <Trash2 size={16} />
                                 <span className="whitespace-nowrap">Clear All</span>
@@ -181,14 +181,14 @@ const Notifications = () => {
                 </div>
 
                 {/* Tabs */}
-                <div className="flex border-b border-slate-100 gap-1 overflow-x-auto no-scrollbar scroll-smooth">
+                <div className="flex border-b border-slate-100 dark:border-slate-800 gap-1 overflow-x-auto no-scrollbar scroll-smooth">
                     {TABS.map(tab => (
                         <button
                             key={tab}
                             onClick={() => { setActiveTab(tab); setPage(1); }}
                             className={`px-5 py-3 text-[13px] font-black transition-all border-b-2 -mb-px whitespace-nowrap ${activeTab === tab
                                 ? 'border-[#3713ec] text-[#3713ec]'
-                                : 'border-transparent text-slate-500 hover:text-slate-800'
+                                : 'border-transparent text-slate-500 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
                                 }`}
                         >
                             {tab}
@@ -208,20 +208,20 @@ const Notifications = () => {
                     </div>
                 ) : notifications.length === 0 ? (
                     <div className="text-center py-24">
-                        <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                            <Inbox size={36} className="text-slate-300" />
+                        <div className="w-20 h-20 bg-slate-50 dark:bg-slate-900 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                            <Inbox size={36} className="text-slate-300 dark:text-slate-700" />
                         </div>
-                        <h3 className="text-xl font-black text-slate-900 mb-2">
+                        <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">
                             {activeTab === 'Unread' ? 'All caught up!' : 'No notifications yet'}
                         </h3>
-                        <p className="text-slate-400 font-bold text-sm max-w-sm mx-auto">
+                        <p className="text-slate-400 dark:text-slate-500 font-bold text-sm max-w-sm mx-auto">
                             {activeTab === 'Unread'
                                 ? "You've read all your notifications. Great job staying on top of things!"
                                 : "When someone submits a form or something important happens, you'll see it here."}
                         </p>
                     </div>
                 ) : (
-                    <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden divide-y divide-slate-50">
+                    <div className="bg-white dark:bg-[#1a1829] rounded-[24px] border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden divide-y divide-slate-50 dark:divide-slate-800 transition-colors">
                         {notifications.map(notification => {
                             const config = ICON_MAP[notification.type] || ICON_MAP.system;
                             return (
@@ -230,8 +230,8 @@ const Notifications = () => {
                                     onClick={() => handleNotificationClick(notification)}
                                     className={`flex items-start gap-4 p-5 transition-all cursor-pointer group ${
                                         notification.read
-                                            ? 'bg-white hover:bg-slate-50/60'
-                                            : 'bg-indigo-50/30 hover:bg-indigo-50/50'
+                                            ? 'bg-white dark:bg-[#1a1829] hover:bg-slate-50/60 dark:hover:bg-slate-800/40'
+                                            : 'bg-indigo-50/30 dark:bg-indigo-500/5 hover:bg-indigo-50/50 dark:hover:bg-indigo-500/10'
                                     }`}
                                 >
                                     {/* Icon */}
@@ -242,7 +242,7 @@ const Notifications = () => {
                                     {/* Content */}
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-0.5">
-                                            <h4 className={`text-[14px] font-black ${notification.read ? 'text-slate-700' : 'text-slate-900'}`}>
+                                            <h4 className={`text-[14px] font-black ${notification.read ? 'text-slate-700 dark:text-slate-300' : 'text-slate-900 dark:text-white'}`}>
                                                 {notification.title}
                                             </h4>
                                             {!notification.read && (
@@ -250,11 +250,11 @@ const Notifications = () => {
                                             )}
                                         </div>
                                         <p className={`text-[13px] font-bold leading-relaxed line-clamp-2 ${
-                                            notification.read ? 'text-slate-400' : 'text-slate-600'
+                                            notification.read ? 'text-slate-400 dark:text-slate-500' : 'text-slate-600 dark:text-slate-400'
                                         }`}>
                                             {notification.message}
                                         </p>
-                                        <p className="text-[11px] font-bold text-slate-400 mt-1.5">
+                                        <p className="text-[11px] font-bold text-slate-400 dark:text-slate-600 mt-1.5">
                                             {formatTimeAgo(notification.createdAt)}
                                         </p>
                                     </div>
@@ -264,7 +264,7 @@ const Notifications = () => {
                                         {!notification.read && (
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); handleMarkRead(notification._id); }}
-                                                className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
+                                                className="p-2 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-xl transition-all"
                                                 title="Mark as read"
                                             >
                                                 <Check size={16} />
@@ -272,7 +272,7 @@ const Notifications = () => {
                                         )}
                                         <button
                                             onClick={(e) => { e.stopPropagation(); handleDelete(notification._id); }}
-                                            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+                                            className="p-2 text-slate-400 hover:text-rose-600 dark:hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all"
                                             title="Delete"
                                         >
                                             <X size={16} />
@@ -290,17 +290,17 @@ const Notifications = () => {
                         <button
                             onClick={() => setPage(p => Math.max(1, p - 1))}
                             disabled={page === 1}
-                            className="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-100 text-slate-500 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                            className="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-100 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                         >
                             <ChevronLeft size={18} />
                         </button>
-                        <span className="text-[13px] font-black text-slate-500">
+                        <span className="text-[13px] font-black text-slate-500 dark:text-slate-400">
                             Page {page} of {totalPages}
                         </span>
                         <button
                             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                             disabled={page === totalPages}
-                            className="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-100 text-slate-500 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                            className="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-100 dark:border-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                         >
                             <ChevronRight size={18} />
                         </button>

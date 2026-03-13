@@ -50,13 +50,13 @@ const Sidebar = ({ isOpen, isCollapsed, onToggleCollapse, onClose }) => {
             )}
 
             <aside className={`
-                ${isCollapsed ? 'w-20' : 'w-64'} h-screen bg-white border-r border-slate-100 flex flex-col fixed left-0 top-0 z-[70] transition-all duration-300
+                ${isCollapsed ? 'w-20' : 'w-64'} h-screen bg-white dark:bg-[#1a1829] border-r border-slate-100 dark:border-slate-800 flex flex-col fixed left-0 top-0 z-[70] transition-all duration-300
                 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
             `}>
                 {/* Toggle Button - Desktop Only */}
                 <button
                     onClick={onToggleCollapse}
-                    className="hidden lg:flex absolute -right-3.5 top-10 w-7 h-7 bg-white border border-slate-100 rounded-full items-center justify-center shadow-md hover:text-[#3713ec] transition-colors z-[80]"
+                    className="hidden lg:flex absolute -right-3.5 top-10 w-7 h-7 bg-white dark:bg-[#1e1c2e] border border-slate-100 dark:border-slate-700 rounded-full items-center justify-center shadow-md hover:text-[#3713ec] transition-colors z-[80]"
                 >
                     {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
                 </button>
@@ -67,8 +67,8 @@ const Sidebar = ({ isOpen, isCollapsed, onToggleCollapse, onClose }) => {
                         <img src={logo} alt="JinraiForms" className="w-full h-full object-contain p-1" />
                     </div>
                     <div className={`transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0 pointer-events-none' : 'opacity-100 w-auto'}`}>
-                        <h1 className="font-black text-slate-900 text-lg leading-none whitespace-nowrap">JinraiForms</h1>
-                        <p className="text-slate-400 text-xs mt-1 font-medium whitespace-nowrap">Pro Plan</p>
+                        <h1 className="font-black text-slate-900 dark:text-white text-lg leading-none whitespace-nowrap">JinraiForms</h1>
+                        <p className="text-slate-400 dark:text-slate-500 text-xs mt-1 font-medium whitespace-nowrap">Pro Plan</p>
                     </div>
                 </div>
 
@@ -83,8 +83,8 @@ const Sidebar = ({ isOpen, isCollapsed, onToggleCollapse, onClose }) => {
               flex items-center rounded-xl font-bold transition-all duration-200 overflow-hidden
               ${isCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}
               ${isActive
-                                    ? 'bg-[#3713ec]/10 text-[#3713ec]'
-                                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}
+                                    ? 'bg-[#3713ec]/10 text-[#3713ec] dark:bg-[#3713ec]/20 dark:text-[#7c6bff]'
+                                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'}
             `}
                             onClick={() => {
                                 if (window.innerWidth < 1024) onClose();
@@ -107,7 +107,7 @@ const Sidebar = ({ isOpen, isCollapsed, onToggleCollapse, onClose }) => {
                 </nav>
 
                 {/* Footer / Settings */}
-                <div className={`border-t border-slate-50 transition-all duration-300 ${isCollapsed ? 'p-3' : 'p-4'}`}>
+                <div className={`border-t border-slate-50 dark:border-slate-800 transition-all duration-300 ${isCollapsed ? 'p-3' : 'p-4'}`}>
                     <NavLink
                         to="/settings"
                         title={isCollapsed ? "Settings" : ""}
@@ -115,8 +115,8 @@ const Sidebar = ({ isOpen, isCollapsed, onToggleCollapse, onClose }) => {
             flex items-center rounded-xl font-bold transition-all duration-200 mb-6 overflow-hidden
             ${isCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}
             ${isActive
-                                ? 'bg-[#3713ec]/10 text-[#3713ec]'
-                                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}
+                                ? 'bg-[#3713ec]/10 text-[#3713ec] dark:bg-[#3713ec]/20 dark:text-[#7c6bff]'
+                                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-200'}
           `}
                     >
                         <div className="flex-shrink-0"><Settings size={20} /></div>
@@ -126,14 +126,14 @@ const Sidebar = ({ isOpen, isCollapsed, onToggleCollapse, onClose }) => {
                     </NavLink>
 
                     {/* Storage Card */}
-                    <div className={`bg-slate-50 rounded-2xl transition-all duration-300 overflow-hidden ${isCollapsed ? 'h-0 opacity-0 p-0' : 'p-4 opacity-100'}`}>
+                    <div className={`bg-slate-50 dark:bg-slate-800/50 rounded-2xl transition-all duration-300 overflow-hidden ${isCollapsed ? 'h-0 opacity-0 p-0' : 'p-4 opacity-100'}`}>
                         <div className="flex justify-between items-center mb-2">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Storage Used</span>
+                            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">Storage Used</span>
                         </div>
-                        <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+                        <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                             <div className="h-full bg-[#3713ec] w-3/4 rounded-full" />
                         </div>
-                        <p className="text-[10px] font-bold text-slate-500 mt-2 uppercase tracking-wide">75% of 10GB</p>
+                        <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-2 uppercase tracking-wide">75% of 10GB</p>
                     </div>
                 </div>
             </aside>

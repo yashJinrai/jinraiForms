@@ -10,19 +10,19 @@ const TABS = ['All Responses', 'Recent', 'Flagged'];
 const PAGE_SIZE = 5;
 
 const statusConfig = {
-    Completed: 'bg-emerald-100 text-emerald-700',
-    Pending: 'bg-amber-100 text-amber-700',
-    Flagged: 'bg-red-100 text-red-600',
+    Completed: 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-500',
+    Pending: 'bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-500',
+    Flagged: 'bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-500',
 };
 
 const DetailRow = ({ icon, label, value }) => (
     <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 flex-shrink-0">
+        <div className="w-8 h-8 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 flex-shrink-0">
             {icon}
         </div>
         <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{label}</p>
-            <p className="text-[13px] font-bold text-slate-800">{value}</p>
+            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">{label}</p>
+            <p className="text-[13px] font-bold text-slate-800 dark:text-slate-200">{value}</p>
         </div>
     </div>
 );
@@ -115,10 +115,10 @@ const Responses = () => {
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="text-center sm:text-left">
-                        <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
+                        <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
                             {filterFormId ? `Responses: ${formName || 'Loading...'}` : 'Responses'}
                         </h1>
-                        <p className="text-slate-500 font-bold text-sm mt-1">
+                        <p className="text-slate-500 dark:text-slate-400 font-bold text-sm mt-1">
                             {filterFormId ? 'Viewing responses for this form only' : 'View and manage your form submissions'}
                         </p>
                     </div>
@@ -132,16 +132,16 @@ const Responses = () => {
                 </div>
 
                 {/* Table Card */}
-                <div className="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
+                <div className="bg-white dark:bg-[#1e1c2e] rounded-[24px] border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
                     {/* Tabs */}
-                    <div className="flex border-b border-slate-100 px-4 sm:px-6 overflow-x-auto no-scrollbar scroll-smooth">
+                    <div className="flex border-b border-slate-100 dark:border-slate-800 px-4 sm:px-6 overflow-x-auto no-scrollbar scroll-smooth">
                         {TABS.map(tab => (
                             <button
                                 key={tab}
                                 onClick={() => { setActiveTab(tab); setPage(1); }}
                                 className={`px-4 py-4 text-[13px] font-black transition-all border-b-2 whitespace-nowrap -mb-px ${activeTab === tab
                                     ? 'border-[#3713ec] text-[#3713ec]'
-                                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                                    : 'border-transparent text-slate-500 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
                                     }`}
                             >
                                 {tab}
@@ -153,38 +153,38 @@ const Responses = () => {
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
-                                <tr className="border-b border-slate-50">
-                                    <th className="text-left px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Submitter</th>
-                                    <th className="text-left px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Form Name</th>
-                                    <th className="text-left px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                                    <th className="text-left px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Date Submitted</th>
-                                    <th className="text-left px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Actions</th>
+                                <tr className="border-b border-slate-50 dark:border-slate-700">
+                                    <th className="text-left px-6 py-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Submitter</th>
+                                    <th className="text-left px-6 py-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Form Name</th>
+                                    <th className="text-left px-6 py-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Status</th>
+                                    <th className="text-left px-6 py-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Date Submitted</th>
+                                    <th className="text-left px-6 py-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-50">
+                            <tbody className="divide-y divide-slate-50 dark:divide-slate-700/50">
                                 {paginated.map(r => (
-                                    <tr key={r.id} className="hover:bg-slate-50/60 transition-colors group">
+                                    <tr key={r.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors group">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${r.avatarColor} flex items-center justify-center text-white text-[11px] font-black shadow-sm flex-shrink-0`}>
                                                     {r.initials}
                                                 </div>
-                                                <span className="font-bold text-slate-800 text-[14px]">{r.name}</span>
+                                                <span className="font-bold text-slate-800 dark:text-slate-200 text-[14px]">{r.name}</span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-[13px] font-bold text-slate-600">{r.form}</td>
+                                        <td className="px-6 py-4 text-[13px] font-bold text-slate-600 dark:text-slate-300">{r.form}</td>
                                         <td className="px-6 py-4">
                                             <span className={`inline-block text-[11px] font-black uppercase tracking-wide px-3 py-1 rounded-full ${statusConfig[r.status]}`}>
                                                 {r.status}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-[13px] font-bold text-slate-500">{r.date}</td>
+                                        <td className="px-6 py-4 text-[13px] font-bold text-slate-500 dark:text-slate-400">{r.date}</td>
                                         <td className="px-6 py-4">
                                             <a
                                                 href={`/form/${r.formId}/response/${r.id}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="text-[13px] font-black text-[#3713ec] hover:text-[#2a0fd4] transition-colors hover:underline underline-offset-2"
+                                                className="text-[13px] font-black text-[#3713ec] dark:text-[#a855f7] hover:text-[#2a0fd4] dark:hover:text-[#9333ea] transition-colors hover:underline underline-offset-2"
                                             >
                                                 View Details
                                             </a>
@@ -196,17 +196,17 @@ const Responses = () => {
                     </div>
 
                     {/* Pagination */}
-                    <div className="flex items-center justify-between px-6 py-4 border-t border-slate-50">
-                        <p className="text-[13px] font-bold text-slate-400">
-                            Showing <span className="text-slate-700">{(page - 1) * PAGE_SIZE + 1}</span> to{' '}
-                            <span className="text-slate-700">{Math.min(page * PAGE_SIZE, filtered.length)}</span> of{' '}
-                            <span className="text-slate-700">{filtered.length}</span> responses
+                    <div className="flex items-center justify-between px-6 py-4 border-t border-slate-50 dark:border-slate-700">
+                        <p className="text-[13px] font-bold text-slate-400 dark:text-slate-500">
+                            Showing <span className="text-slate-700 dark:text-slate-300">{(page - 1) * PAGE_SIZE + 1}</span> to{' '}
+                            <span className="text-slate-700 dark:text-slate-300">{Math.min(page * PAGE_SIZE, filtered.length)}</span> of{' '}
+                            <span className="text-slate-700 dark:text-slate-300">{filtered.length}</span> responses
                         </p>
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => setPage(p => Math.max(1, p - 1))}
                                 disabled={page === 1}
-                                className="w-8 h-8 flex items-center justify-center rounded-xl border border-slate-100 text-slate-500 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                                className="w-8 h-8 flex items-center justify-center rounded-xl border border-slate-100 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                             >
                                 <ChevronLeft size={16} />
                             </button>
@@ -216,7 +216,7 @@ const Responses = () => {
                                     onClick={() => setPage(p)}
                                     className={`w-8 h-8 flex items-center justify-center rounded-xl text-[12px] font-black transition-all ${page === p
                                         ? 'bg-[#3713ec] text-white shadow-lg shadow-[#3713ec]/25'
-                                        : 'border border-slate-100 text-slate-500 hover:bg-slate-50'
+                                        : 'border border-slate-100 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                                         }`}
                                 >
                                     {p}
@@ -225,7 +225,7 @@ const Responses = () => {
                             <button
                                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                                 disabled={page === totalPages}
-                                className="w-8 h-8 flex items-center justify-center rounded-xl border border-slate-100 text-slate-500 hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                                className="w-8 h-8 flex items-center justify-center rounded-xl border border-slate-100 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                             >
                                 <ChevronRight size={16} />
                             </button>

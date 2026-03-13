@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../hooks/useAuth';
+import { getImageUrl } from '../lib/utils';
 import logo from '../assets/images/JLogobg.png';
 
 const formatSocialLink = (url) => {
@@ -158,7 +159,7 @@ const FieldPreview = ({ field, isSelected, onSelect, onDelete, themeColor }) => 
                 return (
                     <div className="w-full h-40 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-slate-300 overflow-hidden">
                         {field.imageUrl ? (
-                            <img src={field.imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                            <img src={getImageUrl(field.imageUrl)} alt="Preview" className="w-full h-full object-cover" />
                         ) : (
                             <>
                                 <Image size={24} className="mb-2" />
@@ -208,22 +209,22 @@ const FieldPreview = ({ field, isSelected, onSelect, onDelete, themeColor }) => 
                     </ul>
                 );
             default:
-                return <input className={baseInput} placeholder="Answer" readOnly />;
+                return <input className={baseInput + " dark:bg-slate-800 dark:border-slate-800 dark:text-slate-500"} placeholder="Answer" readOnly />;
         }
     };
 
     return (
         <div
             onClick={onSelect}
-            className={`group relative bg-white rounded-[20px] border-2 transition-all duration-200 cursor-pointer select-none
+            className={`group relative bg-white dark:bg-[#1e1c2e] rounded-[20px] border-2 transition-all duration-200 cursor-pointer select-none
                 ${isSelected
                     ? 'shadow-lg'
-                    : 'border-slate-100 hover:border-slate-200 hover:shadow-md'
+                    : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-md'
                 }`}
             style={{ 
-                borderColor: isSelected ? themeColor : '#f1f5f9', 
+                borderColor: isSelected ? themeColor : (document.documentElement.classList.contains('dark') ? '#1e293b' : '#f1f5f9'), 
                 boxShadow: isSelected ? `0 10px 25px -5px ${themeColor}15` : 'none',
-                backgroundColor: field.style?.backgroundColor || '#ffffff'
+                backgroundColor: field.style?.backgroundColor || (document.documentElement.classList.contains('dark') ? '#1e1c2e' : '#ffffff')
             }}
         >
             {/* Drag handle */}
@@ -234,11 +235,11 @@ const FieldPreview = ({ field, isSelected, onSelect, onDelete, themeColor }) => 
             <div className="p-5 pl-10">
                 <div className="flex items-start justify-between gap-2 mb-1">
                     <p 
-                        className="font-bold text-slate-800 text-[14px] leading-snug flex-1"
+                        className="font-bold text-slate-800 dark:text-white text-[14px] leading-snug flex-1"
                         style={{
                             fontSize: field.style?.fontSize || '14px',
                             fontWeight: field.style?.fontWeight === 'black' ? 900 : field.style?.fontWeight || 'bold',
-                            color: field.style?.color || '#1e293b',
+                            color: document.documentElement.classList.contains('dark') ? (field.style?.color ? field.style.color : '#ffffff') : (field.style?.color || '#1e293b'),
                             textAlign: field.style?.textAlign || 'left',
                             fontStyle: field.style?.fontStyle || 'normal',
                             textDecoration: field.style?.textDecoration || 'none',
@@ -290,7 +291,7 @@ const StyleToolbar = ({ style, onChange, showLink, linkValue, onLinkChange, show
                 <select
                     value={style?.fontSize || '14px'}
                     onChange={e => onChange({ ...style, fontSize: e.target.value })}
-                    className="w-full border border-slate-100 rounded-lg px-2 py-1.5 text-[11px] font-bold text-slate-600 outline-none"
+                    className="w-full border border-slate-100 dark:border-slate-800 rounded-lg px-2 py-1.5 text-[11px] font-bold text-slate-600 dark:text-slate-400 outline-none bg-white dark:bg-slate-800 transition-colors"
                 >
                     <option value="12px">XS</option>
                     <option value="14px">Base</option>
@@ -305,7 +306,7 @@ const StyleToolbar = ({ style, onChange, showLink, linkValue, onLinkChange, show
                 <select
                     value={style?.fontFamily || 'Inter'}
                     onChange={e => onChange({ ...style, fontFamily: e.target.value })}
-                    className="w-full border border-slate-100 rounded-lg px-2 py-1.5 text-[11px] font-bold text-slate-600 outline-none"
+                    className="w-full border border-slate-100 dark:border-slate-800 rounded-lg px-2 py-1.5 text-[11px] font-bold text-slate-600 dark:text-slate-400 outline-none bg-white dark:bg-slate-800 transition-colors"
                 >
                     <option value="Inter, sans-serif">Inter</option>
                     <option value="'Roboto', sans-serif">Roboto</option>
@@ -334,10 +335,10 @@ const StyleToolbar = ({ style, onChange, showLink, linkValue, onLinkChange, show
             <div />
         </div>
 
-        <div className="flex items-center gap-1.5 bg-slate-50 p-1.5 rounded-xl">
+        <div className="flex flex-wrap items-center gap-1.5 bg-slate-50 dark:bg-slate-800/50 p-1.5 rounded-xl border border-slate-100 dark:border-slate-800 transition-colors">
             <button
                 onClick={() => onChange({ ...style, fontWeight: style?.fontWeight === 'bold' ? 'normal' : 'bold' })}
-                className={`p-2 rounded-lg transition-all ${style?.fontWeight === 'bold' || style?.fontWeight === '900' ? 'bg-white shadow-sm text-[#3713ec]' : 'text-slate-400'}`}
+                className={`p-2 rounded-lg transition-all ${style?.fontWeight === 'bold' || style?.fontWeight === '900' ? 'bg-white dark:bg-slate-700 shadow-sm text-[#3713ec]' : 'text-slate-400 dark:text-slate-500 hover:text-slate-500 dark:hover:text-slate-300'}`}
             >
                 <Bold size={14} />
             </button>
@@ -349,11 +350,11 @@ const StyleToolbar = ({ style, onChange, showLink, linkValue, onLinkChange, show
             </button>
             <button
                 onClick={() => onChange({ ...style, textDecoration: style?.textDecoration === 'underline' ? 'none' : 'underline' })}
-                className={`p-2 rounded-lg transition-all ${style?.textDecoration === 'underline' ? 'bg-white shadow-sm text-[#3713ec]' : 'text-slate-400'}`}
+                className={`p-2 rounded-lg transition-all ${style?.textDecoration === 'underline' ? 'bg-white dark:bg-slate-700 shadow-sm text-[#3713ec]' : 'text-slate-400 dark:text-slate-500 hover:text-slate-500 dark:hover:text-slate-300'}`}
             >
                 <Underline size={14} />
             </button>
-            <div className="w-px h-4 bg-slate-200 mx-1" />
+            <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1" />
             <div className="flex items-center gap-2">
                 <div className="relative group/color flex flex-col items-center">
                     <input
@@ -380,13 +381,13 @@ const StyleToolbar = ({ style, onChange, showLink, linkValue, onLinkChange, show
 
         {showLink && (
             <div className="relative">
-                <LinkIcon size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" />
+                <LinkIcon size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 dark:text-slate-600" />
                 <input
                     type="text"
                     placeholder="Add link URL..."
                     value={linkValue || ''}
                     onChange={e => onLinkChange(e.target.value)}
-                    className="w-full border border-slate-100 rounded-lg pl-8 pr-3 py-1.5 text-[11px] font-bold text-slate-600 outline-none focus:border-[#3713ec]/40 bg-white"
+                    className="w-full border border-slate-100 dark:border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-[11px] font-bold text-slate-600 dark:text-slate-400 outline-none focus:border-[#3713ec]/40 bg-white dark:bg-slate-900 transition-colors"
                 />
             </div>
         )}
@@ -408,9 +409,7 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
             const formData = new FormData();
             formData.append('image', file);
             const res = await onUpload(formData);
-            const imageUrl = res.data.url.startsWith('http') 
-                ? res.data.url 
-                : `${import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api/v1/jinraiForm', '') : 'http://localhost:5002'}${res.data.url}`;
+            const imageUrl = getImageUrl(res.data.url);
 
             if (target === 'banner') {
                 setSettings(s => ({ ...s, bannerImage: imageUrl }));
@@ -426,16 +425,16 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
     };
 
     return (
-        <div className="w-64 flex-shrink-0 bg-white border-l border-slate-100 flex flex-col h-full overflow-y-auto no-scrollbar">
+        <div className="w-64 flex-shrink-0 bg-white dark:bg-[#1a1829] border-l border-slate-100 dark:border-slate-800 flex flex-col h-full overflow-y-auto no-scrollbar transition-colors">
         {/* Tab bar */}
-        <div className="flex border-b border-slate-100 sticky top-0 bg-white z-10">
+        <div className="flex border-b border-slate-100 dark:border-slate-800 sticky top-0 bg-white dark:bg-[#1a1829] z-10 transition-colors">
             {['Field', 'Global'].map(t => (
                 <button
                     key={t}
                     onClick={() => setActiveTab(t)}
                     className={`flex-1 py-4 text-[12px] font-black transition-all border-b-2 -mb-px ${activeTab === t
                         ? 'border-[#3713ec] text-[#3713ec]'
-                        : 'border-transparent text-slate-400 hover:text-slate-700'
+                        : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                         }`}
                 >
                     {t}
@@ -448,13 +447,13 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                 <>
                     <SettingSection title="FORM VISIBILITY">
                         <select
-                            className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 bg-white outline-none focus:ring-2 focus:ring-[#3713ec]/20 focus:border-[#3713ec]/40"
+                            className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 outline-none focus:ring-2 focus:ring-[#3713ec]/20 focus:border-[#3713ec]/40 transition-all"
                             value={settings.visibility}
                             onChange={e => setSettings(s => ({ ...s, visibility: e.target.value }))}
                         >
-                            <option>Public (Anyone with link)</option>
-                            <option>Private (Login required)</option>
-                            <option>Password protected</option>
+                            <option className="dark:bg-slate-900">Public (Anyone with link)</option>
+                            <option className="dark:bg-slate-900">Private (Login required)</option>
+                            <option className="dark:bg-slate-900">Password protected</option>
                         </select>
                     </SettingSection>
 
@@ -465,7 +464,7 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                 placeholder="Enter password to unlock"
                                 value={settings.password || ''}
                                 onChange={e => setSettings(s => ({ ...s, password: e.target.value }))}
-                                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#3713ec]/20 focus:border-[#3713ec]/40"
+                                className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 outline-none focus:ring-2 focus:ring-[#3713ec]/20 focus:border-[#3713ec]/40 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-700"
                             />
                         </SettingSection>
                     )}
@@ -506,7 +505,7 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                                 newLabels[idx] = e.target.value;
                                                 setSettings(s => ({ ...s, pages: { ...s.pages, labels: newLabels } }));
                                             }}
-                                            className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-700 outline-none focus:border-[#3713ec]/40"
+                                            className="flex-1 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 outline-none focus:border-[#3713ec]/40 transition-all"
                                         />
                                         <span className="text-[9px] font-black text-slate-300">
                                             {fields.filter(f => f.page === idx + 1).length} fields
@@ -518,7 +517,7 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                         const newLabels = [...(settings.pages?.labels || ['Page 1']), `Page ${(settings.pages?.labels?.length || 1) + 1}`];
                                         setSettings(s => ({ ...s, pages: { ...s.pages, labels: newLabels } }));
                                     }}
-                                    className="w-full py-2 border border-dashed border-slate-200 rounded-lg text-[11px] font-black text-slate-400 hover:border-[#3713ec]/40 hover:text-[#3713ec] transition-all flex items-center justify-center gap-1.5"
+                                    className="w-full py-2 border border-dashed border-slate-200 dark:border-slate-800 rounded-lg text-[11px] font-black text-slate-400 dark:text-slate-600 hover:border-[#3713ec]/40 hover:text-[#3713ec] transition-all flex items-center justify-center gap-1.5"
                                 >
                                     <Plus size={12} /> ADD PAGE
                                 </button>
@@ -531,7 +530,7 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                             type="text"
                             value={settings.buttonLabel}
                             onChange={e => setSettings(s => ({ ...s, buttonLabel: e.target.value }))}
-                            className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#3713ec]/20 focus:border-[#3713ec]/40"
+                            className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 outline-none focus:ring-2 focus:ring-[#3713ec]/20 focus:border-[#3713ec]/40 transition-all"
                         />
                     </SettingSection>
 
@@ -563,15 +562,15 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                             ))}
                         </div>
                         <div className="mt-4">
-                            <p className="text-[9px] font-black text-slate-300 mb-2 uppercase">Background Color</p>
-                            <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-xl border border-slate-100">
+                            <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 mb-2 uppercase">Background Color</p>
+                            <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-900 p-2 rounded-xl border border-slate-100 dark:border-slate-800 transition-colors">
                                 <input
                                     type="color"
                                     value={settings.secondaryColor || '#f8fafc'}
                                     onChange={e => setSettings(s => ({ ...s, secondaryColor: e.target.value }))}
-                                    className="w-10 h-8 rounded-lg overflow-hidden border-2 border-white shadow-sm cursor-pointer p-0"
+                                    className="w-10 h-8 rounded-lg overflow-hidden border-2 border-white dark:border-slate-800 shadow-sm cursor-pointer p-0"
                                 />
-                                <span className="text-[10px] font-black text-slate-400 uppercase">{settings.secondaryColor || '#F8FAFC'}</span>
+                                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">{settings.secondaryColor || '#F8FAFC'}</span>
                             </div>
                         </div>
                     </SettingSection>
@@ -587,7 +586,7 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                     <SettingSection title="SOCIAL LINKS">
                         <div className="space-y-3">
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-pink-50 flex items-center justify-center text-pink-500">
+                                <div className="w-8 h-8 rounded-lg bg-pink-50 dark:bg-pink-500/10 flex items-center justify-center text-pink-500 transition-colors">
                                     <Instagram size={16} />
                                 </div>
                                 <input
@@ -595,11 +594,11 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                     placeholder="Instagram URL"
                                     value={settings.socialLinks?.instagram || ''}
                                     onChange={e => setSettings(s => ({ ...s, socialLinks: { ...s.socialLinks, instagram: e.target.value } }))}
-                                    className="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:border-pink-300"
+                                    className="flex-1 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 outline-none focus:border-pink-300 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-700"
                                 />
                             </div>
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                                <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 transition-colors">
                                     <Facebook size={16} />
                                 </div>
                                 <input
@@ -607,11 +606,11 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                     placeholder="Facebook URL"
                                     value={settings.socialLinks?.facebook || ''}
                                     onChange={e => setSettings(s => ({ ...s, socialLinks: { ...s.socialLinks, facebook: e.target.value } }))}
-                                    className="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:border-blue-300"
+                                    className="flex-1 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 outline-none focus:border-blue-300 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-700"
                                 />
                             </div>
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500">
+                                <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-500 transition-colors">
                                     <MessageCircle size={16} />
                                 </div>
                                 <input
@@ -619,11 +618,11 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                     placeholder="WhatsApp Number or Link"
                                     value={settings.socialLinks?.whatsapp || ''}
                                     onChange={e => setSettings(s => ({ ...s, socialLinks: { ...s.socialLinks, whatsapp: e.target.value } }))}
-                                    className="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:border-emerald-300"
+                                    className="flex-1 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 outline-none focus:border-emerald-300 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-700"
                                 />
                             </div>
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-900">
+                                <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-900 dark:text-white transition-colors">
                                     <Twitter size={16} />
                                 </div>
                                 <input
@@ -631,11 +630,11 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                     placeholder="Twitter/X URL"
                                     value={settings.socialLinks?.twitter || ''}
                                     onChange={e => setSettings(s => ({ ...s, socialLinks: { ...s.socialLinks, twitter: e.target.value } }))}
-                                    className="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:border-slate-400"
+                                    className="flex-1 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 outline-none focus:border-slate-400 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-700"
                                 />
                             </div>
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500">
+                                <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-500 transition-colors">
                                     <Globe size={16} />
                                 </div>
                                 <input
@@ -643,7 +642,7 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                     placeholder="Website URL"
                                     value={settings.socialLinks?.website || ''}
                                     onChange={e => setSettings(s => ({ ...s, socialLinks: { ...s.socialLinks, website: e.target.value } }))}
-                                    className="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:border-indigo-300"
+                                    className="flex-1 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 outline-none focus:border-indigo-300 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-700"
                                 />
                             </div>
                         </div>
@@ -654,7 +653,7 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                             <textarea
                                 value={settings.footer?.text || ''}
                                 onChange={e => setSettings(s => ({ ...s, footer: { ...s.footer, text: e.target.value } }))}
-                                className="w-full border border-slate-200 rounded-xl px-4 py-2 text-[11px] font-bold text-slate-500 bg-slate-50/50 outline-none focus:border-[#3713ec]/40 h-20 resize-none"
+                                className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2 text-[11px] font-bold text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-900/50 outline-none focus:border-[#3713ec]/40 h-20 resize-none transition-all placeholder:text-slate-300 dark:placeholder:text-slate-700"
                                 placeholder="Add custom footer text (e.g. Copyright, Address...)"
                             />
                             <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 space-y-2.5">
@@ -664,7 +663,7 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                         <select 
                                             value={settings.footer?.style?.fontSize || '12px'}
                                             onChange={e => setSettings(s => ({ ...s, footer: { ...s.footer, style: { ...s.footer.style, fontSize: e.target.value } } }))}
-                                            className="w-full border border-slate-100 rounded-lg px-2 py-1 text-[11px] font-bold text-slate-600 outline-none bg-white"
+                                            className="w-full border border-slate-100 dark:border-slate-800 rounded-lg px-2 py-1 text-[11px] font-bold text-slate-600 dark:text-slate-400 outline-none bg-white dark:bg-slate-800 transition-colors"
                                         >
                                             <option value="10px">Smallest</option>
                                             <option value="12px">Small</option>
@@ -674,13 +673,13 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                     </div>
                                     <div>
                                         <p className="text-[9px] font-black text-slate-300 mb-1 uppercase">Align</p>
-                                        <div className="flex bg-white rounded-lg p-0.5 border border-slate-100">
+                                        <div className="flex bg-white dark:bg-slate-800 rounded-lg p-0.5 border border-slate-100 dark:border-slate-800 transition-colors">
                                             {['left', 'center', 'right'].map(align => (
                                                 <button
                                                     key={align}
                                                     type="button"
                                                     onClick={() => setSettings(s => ({ ...s, footer: { ...s.footer, style: { ...s.footer.style, textAlign: align } } }))}
-                                                    className={`flex-1 py-1 rounded-md flex items-center justify-center transition-all ${settings.footer?.style?.textAlign === align ? 'bg-slate-50 text-[#3713ec]' : 'text-slate-300 hover:text-slate-500'}`}
+                                                    className={`flex-1 py-1 rounded-md flex items-center justify-center transition-all ${settings.footer?.style?.textAlign === align ? 'bg-slate-50 dark:bg-slate-700 text-[#3713ec]' : 'text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400'}`}
                                                 >
                                                     {align === 'left' ? <AlignLeft size={10} /> : align === 'center' ? <AlignCenter size={10} /> : <AlignRight size={10} />}
                                                 </button>
@@ -688,13 +687,13 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center justify-between bg-white p-1.5 px-2.5 rounded-lg border border-slate-100">
-                                    <p className="text-[9px] font-black text-slate-300 uppercase">Text Color</p>
+                                <div className="flex items-center justify-between bg-white dark:bg-slate-800 p-1.5 px-2.5 rounded-lg border border-slate-100 dark:border-slate-800 transition-colors">
+                                    <p className="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase">Text Color</p>
                                     <input
                                         type="color"
                                         value={settings.footer?.style?.color || '#94a3b8'}
                                         onChange={e => setSettings(s => ({ ...s, footer: { ...s.footer, style: { ...s.footer.style, color: e.target.value } } }))}
-                                        className="w-8 h-5 rounded overflow-hidden border border-slate-100 cursor-pointer p-0"
+                                        className="w-8 h-5 rounded overflow-hidden border border-slate-100 dark:border-slate-700 cursor-pointer p-0"
                                     />
                                 </div>
                             </div>
@@ -708,7 +707,7 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                     <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
                                 ) : settings.bannerImage ? (
                                     <>
-                                        <img src={settings.bannerImage} alt="Banner" className="w-full h-20 object-cover" />
+                                        <img src={getImageUrl(settings.bannerImage)} alt="Banner" className="w-full h-20 object-cover" />
                                         <button
                                             onClick={() => setSettings(s => ({ ...s, bannerImage: null }))}
                                             className="absolute top-1 right-1 p-1 bg-white/80 hover:bg-white rounded-lg text-red-500 shadow-sm transition-all"
@@ -733,7 +732,7 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                 />
                                 <button
                                     onClick={() => bannerInputRef.current?.click()}
-                                    className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-black transition-all flex items-center justify-center gap-2"
+                                    className="w-full py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg text-[11px] font-black transition-all flex items-center justify-center gap-2"
                                 >
                                     <Upload size={12} /> UPLOAD IMAGE
                                 </button>
@@ -743,7 +742,7 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                         placeholder="Or paste URL here..."
                                         value={settings.bannerImage || ''}
                                         onChange={(e) => setSettings(s => ({ ...s, bannerImage: e.target.value }))}
-                                        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:border-[#3713ec]/40 bg-white"
+                                        className="w-full border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:border-[#3713ec]/40 bg-white dark:bg-slate-900 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-700"
                                     />
                                 </div>
                             </div>
@@ -758,7 +757,7 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                 type="text"
                                 value={selectedField.label}
                                 onChange={e => updateField(selectedField.id, { label: e.target.value })}
-                                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#3713ec]/20 focus:border-[#3713ec]/40"
+                                className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 outline-none focus:ring-2 focus:ring-[#3713ec]/20 focus:border-[#3713ec]/40 transition-all"
                             />
                         </SettingSection>
 
@@ -766,7 +765,7 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                             <textarea
                                 value={selectedField.description || ''}
                                 onChange={e => updateField(selectedField.id, { description: e.target.value })}
-                                className="w-full border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold text-slate-500 bg-slate-50/50 outline-none focus:border-[#3713ec]/40 h-16 resize-none"
+                                className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2 text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-900/50 outline-none focus:border-[#3713ec]/40 h-16 resize-none transition-all"
                                 placeholder="Add instructions or details..."
                             />
                         </SettingSection>
@@ -813,7 +812,7 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                             type="number"
                                             value={selectedField.min || 0}
                                             onChange={e => updateField(selectedField.id, { min: parseInt(e.target.value) })}
-                                            className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 outline-none focus:border-[#3713ec]/40"
+                                            className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 outline-none focus:border-[#3713ec]/40"
                                         />
                                     </SettingSection>
                                     <SettingSection title="MAX VALUE">
@@ -821,7 +820,7 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                             type="number"
                                             value={selectedField.max || 10}
                                             onChange={e => updateField(selectedField.id, { max: parseInt(e.target.value) })}
-                                            className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 outline-none focus:border-[#3713ec]/40"
+                                            className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 outline-none focus:border-[#3713ec]/40"
                                         />
                                     </SettingSection>
                                 </div>
@@ -830,7 +829,7 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                         type="text"
                                         value={selectedField.minLabel || ''}
                                         onChange={e => updateField(selectedField.id, { minLabel: e.target.value })}
-                                        className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 outline-none focus:border-[#3713ec]/40"
+                                        className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 outline-none focus:border-[#3713ec]/40"
                                         placeholder="E.g. Unsatisfied"
                                     />
                                 </SettingSection>
@@ -887,7 +886,7 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                     />
                                     <button
                                         onClick={() => fieldImageInputRef.current?.click()}
-                                        className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 hover:border-[#3713ec]/40 hover:text-[#3713ec] transition-all flex flex-col items-center justify-center gap-1"
+                                        className="w-full py-3 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl text-slate-400 dark:text-slate-600 hover:border-[#3713ec]/40 hover:text-[#3713ec] transition-all flex flex-col items-center justify-center gap-1"
                                     >
                                         {uploading ? (
                                             <div className="w-4 h-4 border-2 border-slate-300 border-t-[#3713ec] rounded-full animate-spin" />
@@ -898,12 +897,12 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                             </>
                                         )}
                                     </button>
-                                    <div className="text-center text-[10px] font-black text-slate-300">OR</div>
+                                    <div className="text-center text-[10px] font-black text-slate-300 dark:text-slate-700">OR</div>
                                     <input
                                         type="text"
                                         value={selectedField.imageUrl || ''}
                                         onChange={e => updateField(selectedField.id, { imageUrl: e.target.value })}
-                                        className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 outline-none focus:border-[#3713ec]/40"
+                                        className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 outline-none focus:border-[#3713ec]/40"
                                         placeholder="Paste image URL here..."
                                     />
                                 </div>
@@ -935,14 +934,14 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                                     newOpts[i] = e.target.value;
                                                     updateField(selectedField.id, { options: newOpts });
                                                 }}
-                                                className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-700 outline-none focus:border-[#3713ec]/40"
+                                                className="flex-1 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 outline-none focus:border-[#3713ec]/40 transition-all"
                                             />
                                             <button
                                                 onClick={() => {
                                                     const newOpts = (selectedField.options || ['Option 1', 'Option 2', 'Option 3']).filter((_, idx) => idx !== i);
                                                     updateField(selectedField.id, { options: newOpts });
                                                 }}
-                                                className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                className="p-1.5 text-slate-300 dark:text-slate-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all"
                                             >
                                                 <X size={14} />
                                             </button>
@@ -953,7 +952,7 @@ const SettingsPanel = ({ activeTab, setActiveTab, settings, setSettings, selecte
                                             const currentOpts = selectedField.options || ['Option 1', 'Option 2', 'Option 3'];
                                             updateField(selectedField.id, { options: [...currentOpts, `Option ${currentOpts.length + 1}`] });
                                         }}
-                                        className="w-full py-2 border border-dashed border-slate-200 rounded-lg text-[11px] font-black text-slate-400 hover:border-[#3713ec]/40 hover:text-[#3713ec] transition-all flex items-center justify-center gap-1.5"
+                                        className="w-full py-2 border border-dashed border-slate-200 dark:border-slate-800 rounded-lg text-[11px] font-black text-slate-400 dark:text-slate-600 hover:border-[#3713ec]/40 hover:text-[#3713ec] transition-all flex items-center justify-center gap-1.5"
                                     >
                                         <Plus size={12} /> ADD OPTION
                                     </button>
@@ -990,8 +989,8 @@ const ToggleSetting = ({ label, desc, value, onChange }) => (
         }}
     >
         <div className="flex-1">
-            <p className="text-[13px] font-bold text-slate-800 group-hover/toggle:text-[#3713ec] transition-colors">{label}</p>
-            <p className="text-[11px] text-slate-400 mt-0.5">{desc}</p>
+            <p className="text-[13px] font-bold text-slate-800 dark:text-slate-200 group-hover/toggle:text-[#3713ec] transition-colors">{label}</p>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">{desc}</p>
         </div>
         <button
             type="button"
@@ -1309,22 +1308,22 @@ const CreateForm = () => {
     return (
         <div className="h-screen bg-[#F8FAFC] flex flex-col overflow-hidden">
             {/* Top Bar */}
-            <header className="h-14 bg-white border-b border-slate-100 flex items-center justify-between px-3 sm:px-6 sticky top-0 z-50 shadow-sm">
+            <header className="h-14 bg-white dark:bg-[#1a1829] border-b border-slate-100 dark:border-slate-800 flex items-center justify-between px-3 sm:px-6 sticky top-0 z-50 shadow-sm transition-colors">
                 <div className="flex items-center gap-2 sm:gap-4">
                     <button
                         onClick={handleBack}
-                        className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-all"
+                        className="p-2 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all"
                     >
                         <ArrowLeft size={18} />
                     </button>
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white shadow-sm overflow-hidden p-0.5 shrink-0">
+                    <div className="flex items-center gap-2 group cursor-pointer" onClick={() => navigate('/dashboard')}>
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white dark:bg-slate-800 shadow-sm overflow-hidden p-0.5 shrink-0 transition-colors">
                             <img src={logo} alt="JinraiForms Logo" className="w-full h-full object-contain" />
                         </div>
-                        <span className="font-black text-slate-900 text-[13px] hidden lg:block">JinraiForms</span>
+                        <span className="font-black text-slate-900 dark:text-white text-[13px] hidden lg:block uppercase tracking-tighter">JinraiForms</span>
                     </div>
-                    <div className="hidden lg:flex items-center gap-1.5 text-[12px] text-slate-400 font-bold max-w-[100px] sm:max-w-none truncate">
-                        <span className="text-slate-700">{formTitle || 'Untitled Form'}</span>
+                    <div className="hidden lg:flex items-center gap-1.5 text-[12px] text-slate-400 dark:text-slate-500 font-bold max-w-[100px] sm:max-w-none truncate">
+                        <span className="text-slate-700 dark:text-slate-400">{formTitle || 'Untitled Form'}</span>
                     </div>
                 </div>
 
@@ -1333,7 +1332,7 @@ const CreateForm = () => {
                     <div className="flex items-center sm:gap-1 mr-1">
                         <button
                             onClick={() => formId ? window.open(`http://localhost:5173/form/${formId}`, '_blank') : showToast("Please save the form before previewing.", "info")}
-                            className="flex items-center gap-2 p-1.5 sm:p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-all"
+                            className="flex items-center gap-2 p-1.5 sm:p-2 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all"
                             title="Preview Form"
                         >
                             <Eye className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
@@ -1341,7 +1340,7 @@ const CreateForm = () => {
                         </button>
                         <button
                             onClick={() => formId ? navigate(`/responses?formId=${formId}`) : showToast("Please save the form first to view responses.", "info")}
-                            className="flex items-center gap-2 p-1.5 sm:p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-all"
+                            className="flex items-center gap-2 p-1.5 sm:p-2 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all"
                             title="View Responses"
                         >
                             <MessageSquare className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
@@ -1349,7 +1348,7 @@ const CreateForm = () => {
                         </button>
                         <button
                             onClick={handleShare}
-                            className="flex items-center gap-2 p-1.5 sm:p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-all"
+                            className="flex items-center gap-2 p-1.5 sm:p-2 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all"
                             title="Share Form"
                         >
                             <Share2 className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
@@ -1361,11 +1360,11 @@ const CreateForm = () => {
                         onClick={handleSave}
                         disabled={saving}
                         className={`flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[11px] sm:text-[12px] font-black transition-all ${saved
-                            ? 'bg-emerald-100 text-emerald-600'
-                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                            ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-500'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                             } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
-                        {saving ? <div className="w-3.5 h-3.5 border-2 border-slate-600 border-t-transparent rounded-full animate-spin" /> : saved ? <Check size={14} /> : <Save size={14} />}
+                        {saving ? <div className="w-3.5 h-3.5 border-2 border-slate-600 dark:border-slate-400 border-t-transparent rounded-full animate-spin" /> : saved ? <Check size={14} /> : <Save size={14} />}
                         <span className="hidden xs:block">{saving ? 'Saving...' : saved ? 'Saved' : 'Save'}</span>
                     </button>
 
@@ -1388,23 +1387,23 @@ const CreateForm = () => {
             {/* Body: Left panel | Canvas | Right panel */}
             <div className="flex flex-1 overflow-hidden relative">
                 {/* Tab Switcher: Visible on Mobile and Tablet (below xl) */}
-                <div className="xl:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-white border border-slate-100 shadow-2xl rounded-2xl flex items-center p-1.5 gap-1">
+                <div className="xl:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-[60] bg-white dark:bg-[#1e1c2e] border border-slate-100 dark:border-slate-700 shadow-2xl rounded-2xl flex items-center p-1.5 gap-1 transition-colors">
                     <button 
                         onClick={() => setSettingsTab('Palette')} 
-                        className={`px-4 py-2 rounded-xl text-[11px] font-black transition-all ${settingsTab === 'Palette' ? 'bg-[#3713ec] text-white shadow-lg shadow-[#3713ec]/20' : 'text-slate-400 hover:bg-slate-50'}`}
+                        className={`px-4 py-2 rounded-xl text-[11px] font-black transition-all ${settingsTab === 'Palette' ? 'bg-[#3713ec] text-white shadow-lg shadow-[#3713ec]/20' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                     >
                         Fields
                     </button>
                     {/* Canvas tab only needed on mobile (below lg) as it's always visible on Tablet/Desktop */}
                     <button 
                         onClick={() => setSettingsTab('Canvas')} 
-                        className={`lg:hidden px-4 py-2 rounded-xl text-[11px] font-black transition-all ${settingsTab === 'Canvas' ? 'bg-[#3713ec] text-white shadow-lg shadow-[#3713ec]/20' : 'text-slate-400 hover:bg-slate-50'}`}
+                        className={`lg:hidden px-4 py-2 rounded-xl text-[11px] font-black transition-all ${settingsTab === 'Canvas' ? 'bg-[#3713ec] text-white shadow-lg shadow-[#3713ec]/20' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                     >
                         Canvas
                     </button>
                     <button 
                         onClick={() => setSettingsTab('Global')} 
-                        className={`px-4 py-2 rounded-xl text-[11px] font-black transition-all ${settingsTab === 'Global' || settingsTab === 'Field' ? 'bg-[#3713ec] text-white shadow-lg shadow-[#3713ec]/20' : 'text-slate-400 hover:bg-slate-50'}`}
+                        className={`px-4 py-2 rounded-xl text-[11px] font-black transition-all ${settingsTab === 'Global' || settingsTab === 'Field' ? 'bg-[#3713ec] text-white shadow-lg shadow-[#3713ec]/20' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                     >
                         Settings
                     </button>
@@ -1412,7 +1411,7 @@ const CreateForm = () => {
 
                 {/* ── Left: Field Palette ── */}
                 <aside className={`
-                    w-full lg:w-52 h-full flex-shrink-0 bg-white lg:border-r border-slate-100 overflow-y-auto no-scrollbar absolute inset-0 z-40 lg:relative transition-all duration-300
+                    w-full lg:w-52 h-full flex-shrink-0 bg-white dark:bg-[#1a1829] lg:border-r border-slate-100 dark:border-slate-800 overflow-y-auto no-scrollbar absolute inset-0 z-40 lg:relative transition-all duration-300
                     ${settingsTab === 'Palette' ? 'translate-x-0 opacity-100' : '-translate-x-full xl:translate-x-0 xl:opacity-100 pointer-events-none xl:pointer-events-auto'}
                     ${(settingsTab === 'Palette' || window.innerWidth >= 1280) ? 'block' : 'hidden xl:block'}
                 `}>
@@ -1425,21 +1424,21 @@ const CreateForm = () => {
                 <main className={`
                     flex-1 h-full overflow-y-auto px-4 sm:px-6 py-6 sm:py-8 no-scrollbar transition-all duration-300
                     ${settingsTab === 'Canvas' ? 'translate-x-0 opacity-100' : 'hidden lg:block lg:translate-x-0 lg:opacity-100'}
-                `} style={{ backgroundColor: settings.secondaryColor || '#F8FAFC' }}>
+                `} style={{ backgroundColor: settings.secondaryColor || (document.documentElement.classList.contains('dark') ? '#0f0e17' : '#F8FAFC') }}>
                     <div className="max-w-2xl mx-auto space-y-4">
                         {/* Banner Image */}
                         {settings.bannerImage && (
-                            <div className="w-full h-40 rounded-[20px] overflow-hidden border border-slate-100 shadow-sm mb-4">
-                                <img src={settings.bannerImage} alt="Form Banner" className="w-full h-full object-cover" />
+                            <div className="w-full h-40 rounded-[20px] overflow-hidden border border-slate-100 dark:border-slate-800 shadow-sm mb-4">
+                                <img src={getImageUrl(settings.bannerImage)} alt="Form Banner" className="w-full h-full object-cover" />
                             </div>
                         )}
 
                         {/* Form title card */}
-                        <div className="rounded-[20px] border border-slate-100 shadow-sm p-8" style={{ borderTop: `6px solid ${settings.themeColor}`, backgroundColor: settings.headerStyle?.backgroundColor || '#ffffff' }}>
+                        <div className="rounded-[20px] border border-slate-100 dark:border-slate-800 shadow-sm p-8" style={{ borderTop: `6px solid ${settings.themeColor}`, backgroundColor: settings.headerStyle?.backgroundColor || (document.documentElement.classList.contains('dark') ? '#1e1c2e' : '#ffffff') }}>
                             <input
                                 value={formTitle}
                                 onChange={e => setFormTitle(e.target.value)}
-                                className="w-full bg-transparent outline-none placeholder:text-slate-300 border-b-2 border-transparent focus:border-[#3713ec]/30 pb-1 transition-all"
+                                className="w-full bg-transparent outline-none placeholder:text-slate-300 dark:placeholder:text-slate-600 border-b-2 border-transparent focus:border-[#3713ec]/30 pb-1 transition-all"
                                 style={{
                                     fontSize: settings.headerStyle?.fontSize || '30px',
                                     fontWeight: settings.headerStyle?.fontWeight === 'black' ? 900 : settings.headerStyle?.fontWeight || '900',
@@ -1454,10 +1453,11 @@ const CreateForm = () => {
                             <input
                                 value={formDesc}
                                 onChange={e => setFormDesc(e.target.value)}
-                                className="w-full mt-3 text-[14px] text-slate-400 bg-transparent outline-none placeholder:text-slate-300 transition-all font-medium"
+                                className="w-full mt-3 text-[14px] text-slate-400 dark:text-slate-500 bg-transparent outline-none placeholder:text-slate-300 dark:placeholder:text-slate-600 transition-all font-medium"
                                 style={{
                                     textAlign: settings.headerStyle?.textAlign || 'left',
-                                    fontFamily: settings.headerStyle?.fontFamily || 'inherit'
+                                    fontFamily: settings.headerStyle?.fontFamily || 'inherit',
+                                    color: document.documentElement.classList.contains('dark') ? (settings.headerStyle?.color ? settings.headerStyle.color : '#94a3b8') : (settings.headerStyle?.color || '#64748b')
                                 }}
                                 placeholder="Add a description for your form"
                             />
@@ -1475,7 +1475,7 @@ const CreateForm = () => {
                                             {editingPageLabel === pageNum ? (
                                                 <input
                                                     autoFocus
-                                                    className="px-3 py-2 text-[12px] font-black rounded-xl border-2 outline-none w-28"
+                                                    className="px-3 py-2 text-[12px] font-black rounded-xl border-2 outline-none w-28 dark:bg-slate-800"
                                                     style={{ borderColor: settings.themeColor, color: settings.themeColor }}
                                                     value={label}
                                                     onChange={e => renamePageLabel(pageNum, e.target.value)}
@@ -1556,14 +1556,14 @@ const CreateForm = () => {
                                 ? fields.filter(f => f.page === currentPage)
                                 : fields;
                             return visibleFields.length === 0 && (
-                                <div className="bg-white rounded-[20px] border-2 border-dashed border-slate-200 p-16 flex flex-col items-center text-center">
-                                    <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mb-5">
-                                        <Plus size={28} className="text-slate-300" />
+                                <div className="bg-white dark:bg-[#1e1c2e] rounded-[20px] border-2 border-dashed border-slate-200 dark:border-slate-800 p-16 flex flex-col items-center text-center">
+                                    <div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center mb-5">
+                                        <Plus size={28} className="text-slate-300 dark:text-slate-600" />
                                     </div>
-                                    <h3 className="font-black text-slate-800 text-lg mb-1">
+                                    <h3 className="font-black text-slate-800 dark:text-white text-lg mb-1">
                                         {settings.pages?.enabled ? `Build ${settings.pages?.labels?.[currentPage - 1] || `Page ${currentPage}`}` : 'Build your form'}
                                     </h3>
-                                    <p className="text-sm text-slate-400 max-w-xs">
+                                    <p className="text-sm text-slate-400 dark:text-slate-500 max-w-xs">
                                         Drag and drop fields from the left panel to start collecting data.
                                     </p>
                                     <button
@@ -1585,14 +1585,19 @@ const CreateForm = () => {
                             return visibleFields.length > 0 && (
                                 <button
                                     onClick={() => addField('short_text', 'New Question')}
-                                    className="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-[12px] font-black text-slate-400 hover:bg-white transition-all flex items-center justify-center gap-2 group"
+                                    className="w-full py-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-[12px] font-black text-slate-400 dark:text-slate-500 hover:bg-white dark:hover:bg-[#1e1c2e] transition-all flex items-center justify-center gap-2 group"
                                     onMouseEnter={(e) => {
                                         e.currentTarget.style.borderColor = settings.themeColor;
                                         e.currentTarget.style.color = settings.themeColor;
                                     }}
                                     onMouseLeave={(e) => {
-                                        e.currentTarget.style.borderColor = '#e2e8f0';
-                                        e.currentTarget.style.color = '#94a3b8';
+                                        if (document.documentElement.classList.contains('dark')) {
+                                            e.currentTarget.style.borderColor = '#1e293b'; // slate-800ish
+                                            e.currentTarget.style.color = '#64748b'; // slate-500ish
+                                        } else {
+                                            e.currentTarget.style.borderColor = '#e2e8f0';
+                                            e.currentTarget.style.color = '#94a3b8';
+                                        }
                                     }}
                                 >
                                     <Plus size={14} /> ADD FIELD
@@ -1605,27 +1610,27 @@ const CreateForm = () => {
                             {settings.socialLinks && Object.values(settings.socialLinks).some(l => l) && (
                                 <div className="flex items-center gap-4">
                                     {settings.socialLinks.instagram && (
-                                        <a href={formatSocialLink(settings.socialLinks.instagram)} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-full border border-slate-100 shadow-sm text-pink-500 hover:scale-110 transition-transform">
+                                        <a href={formatSocialLink(settings.socialLinks.instagram)} target="_blank" rel="noopener noreferrer" className="p-2 bg-white dark:bg-slate-800 rounded-full border border-slate-100 dark:border-slate-700 shadow-sm text-pink-500 hover:scale-110 transition-transform">
                                             <Instagram size={18} />
                                         </a>
                                     )}
                                     {settings.socialLinks.facebook && (
-                                        <a href={formatSocialLink(settings.socialLinks.facebook)} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-full border border-slate-100 shadow-sm text-blue-600 hover:scale-110 transition-transform">
+                                        <a href={formatSocialLink(settings.socialLinks.facebook)} target="_blank" rel="noopener noreferrer" className="p-2 bg-white dark:bg-slate-800 rounded-full border border-slate-100 dark:border-slate-700 shadow-sm text-blue-600 hover:scale-110 transition-transform">
                                             <Facebook size={18} />
                                         </a>
                                     )}
                                     {settings.socialLinks.whatsapp && (
-                                        <a href={settings.socialLinks.whatsapp.startsWith('http') ? settings.socialLinks.whatsapp : `https://wa.me/${settings.socialLinks.whatsapp}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-full border border-slate-100 shadow-sm text-emerald-500 hover:scale-110 transition-transform">
+                                        <a href={settings.socialLinks.whatsapp.startsWith('http') ? settings.socialLinks.whatsapp : `https://wa.me/${settings.socialLinks.whatsapp}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-white dark:bg-slate-800 rounded-full border border-slate-100 dark:border-slate-700 shadow-sm text-emerald-500 hover:scale-110 transition-transform">
                                             <MessageCircle size={18} />
                                         </a>
                                     )}
                                     {settings.socialLinks.twitter && (
-                                        <a href={formatSocialLink(settings.socialLinks.twitter)} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-full border border-slate-100 shadow-sm text-slate-900 hover:scale-110 transition-transform">
+                                        <a href={formatSocialLink(settings.socialLinks.twitter)} target="_blank" rel="noopener noreferrer" className="p-2 bg-white dark:bg-slate-800 rounded-full border border-slate-100 dark:border-slate-700 shadow-sm text-slate-900 dark:text-white hover:scale-110 transition-transform">
                                             <Twitter size={18} />
                                         </a>
                                     )}
                                     {settings.socialLinks.website && (
-                                        <a href={formatSocialLink(settings.socialLinks.website)} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-full border border-slate-100 shadow-sm text-indigo-600 hover:scale-110 transition-transform">
+                                        <a href={formatSocialLink(settings.socialLinks.website)} target="_blank" rel="noopener noreferrer" className="p-2 bg-white dark:bg-slate-800 rounded-full border border-slate-100 dark:border-slate-700 shadow-sm text-indigo-600 hover:scale-110 transition-transform">
                                             <Globe size={18} />
                                         </a>
                                     )}
@@ -1641,7 +1646,7 @@ const CreateForm = () => {
 
                 {/* ── Right: Settings Panel ── */}
                 <div className={`
-                    w-full lg:w-64 flex-shrink-0 bg-white lg:border-l border-slate-100 overflow-y-auto no-scrollbar absolute inset-0 z-40 lg:relative transition-all duration-300
+                    w-full lg:w-64 flex-shrink-0 bg-white dark:bg-[#1a1829] lg:border-l border-slate-100 dark:border-slate-800 overflow-y-auto no-scrollbar absolute inset-0 z-40 lg:relative transition-all duration-300
                     ${(settingsTab === 'Global' || settingsTab === 'Field') ? 'translate-x-0 opacity-100' : 'translate-x-full xl:translate-x-0 xl:opacity-100 pointer-events-none xl:pointer-events-auto'}
                     ${(settingsTab === 'Global' || settingsTab === 'Field' || window.innerWidth >= 1280) ? 'block' : 'hidden xl:block'}
                 `}>
@@ -1667,23 +1672,27 @@ const CreateForm = () => {
 /* ───────────────────────── Field group in palette ───────────────────────── */
 const FieldGroup = ({ title, fields, onAdd, themeColor }) => (
     <div className="p-3 sm:p-4">
-        <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 sm:mb-3 px-1">{title}</p>
+        <p className="text-[8px] sm:text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 sm:mb-3 px-1">{title}</p>
         <div className="space-y-0.5 sm:space-y-1">
             {fields.map(f => (
                 <button
                     key={f.type}
                     onClick={() => onAdd(f.type, f.label)}
-                    className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 text-[11px] sm:text-[13px] font-bold text-slate-600 rounded-xl transition-all group text-left"
+                    className="w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 sm:py-2.5 text-[11px] sm:text-[13px] font-bold text-slate-600 dark:text-slate-300 rounded-xl transition-all group text-left"
                     onMouseEnter={(e) => {
                         e.currentTarget.style.backgroundColor = `${themeColor}10`;
                         e.currentTarget.style.color = themeColor;
                     }}
                     onMouseLeave={(e) => {
                         e.currentTarget.style.backgroundColor = 'transparent';
-                        e.currentTarget.style.color = '#475569';
+                        if (document.documentElement.classList.contains('dark')) {
+                            e.currentTarget.style.color = '#cbd5e1'; // slate-300
+                        } else {
+                            e.currentTarget.style.color = '#475569';
+                        }
                     }}
                 >
-                    <span className="text-slate-400 group-hover:text-inherit transition-colors scale-90 sm:scale-100">{f.icon}</span>
+                    <span className="text-slate-400 dark:text-slate-600 group-hover:text-inherit transition-colors scale-90 sm:scale-100">{f.icon}</span>
                     <span className="truncate">{f.label}</span>
                 </button>
             ))}

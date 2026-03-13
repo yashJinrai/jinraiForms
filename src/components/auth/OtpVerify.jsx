@@ -89,7 +89,7 @@ const OtpVerify = ({ email, onNext }) => {
                     </Button>
 
                     <div className="flex flex-col items-center gap-4 pt-4">
-                        <p className="text-slate-500 text-sm">
+                        <p className="text-slate-500 dark:text-slate-400 text-sm">
                             Didn't receive the code?{' '}
                             {timer > 0 ? (
                                 <span className="font-bold text-primary">Resend in {timer}s</span>
@@ -104,7 +104,7 @@ const OtpVerify = ({ email, onNext }) => {
                                 </button>
                             )}
                         </p>
-                        <a href="/login" className="flex items-center justify-center gap-2 text-slate-500 hover:text-slate-900 font-bold text-sm">
+                        <a href="/login" className="flex items-center justify-center gap-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-bold text-sm transition-colors">
                             <span className="material-symbols-outlined text-lg"><IoArrowBack /></span>
                             Back to login
                         </a>

@@ -52,19 +52,19 @@ const Signup = () => {
             </div>
 
             {/* Right Side: Form */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 lg:p-24">
+            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 lg:p-24 bg-white dark:bg-[#0f0e17]">
                 <div className="max-w-md w-full">
                     {/* Mobile Logo */}
                     <div className="lg:hidden flex items-center gap-2 mb-8">
                         <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
                             <img src={logo} alt="JinraiForms" />
                         </div>
-                        <span className="text-[#0F172A] text-xl font-bold">JinraiForms</span>
+                        <span className="text-[#0F172A] dark:text-white text-xl font-bold">JinraiForms</span>
                     </div>
 
                     <div className="mb-8">
-                        <h1 className="text-[#0F172A] text-3xl font-extrabold tracking-tight mb-2">Create your account</h1>
-                        {/* <p className="text-[#64748B]">Start your 14-day free trial. No credit card required.</p> */}
+                        <h1 className="text-[#0F172A] dark:text-white text-3xl font-extrabold tracking-tight mb-2">Create your account</h1>
+                        {/* <p className="text-[#64748B] dark:text-slate-400">Start your 14-day free trial. No credit card required.</p> */}
                     </div>
 
                     {/* Form */}
@@ -72,7 +72,7 @@ const Signup = () => {
                     
                     {/* Login Link */}
                     <div className="mt-4 text-center">
-                        <p className="text-[#475569] text-sm font-regular">
+                        <p className="text-[#475569] dark:text-slate-400 text-sm font-regular">
                             Already have an account?{' '}
                             <a href="/login" className="text-[#3713EC] font-bold hover:underline ml-1 transition-all">Sign in</a>
                         </p>

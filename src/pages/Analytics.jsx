@@ -164,12 +164,12 @@ const BarChart = ({ data }) => {
             {data.map((d, i) => (
                 <div key={i} className="group">
                     <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[13px] font-bold text-slate-700 truncate max-w-[160px]">{d.label}</span>
+                        <span className="text-[13px] font-bold text-slate-700 dark:text-slate-300 truncate max-w-[160px]">{d.label}</span>
                         <div className="flex items-center gap-3">
                             <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">{d.responses.toLocaleString()} response</span>
                         </div>
                     </div>
-                    <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-2.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                         <div
                             className="h-full rounded-full bg-gradient-to-r from-[#3713ec] to-violet-500 transition-all duration-700"
                             style={{ width: `${(d.responses / maxVal) * 100}%` }}
@@ -213,8 +213,8 @@ const DonutChart = ({ devices }) => {
                             />
                         );
                     })}
-                    <text x={CX} y={CY - 6} textAnchor="middle" fontSize="18" fontWeight="900" fill="#0f172a">58%</text>
-                    <text x={CX} y={CY + 14} textAnchor="middle" fontSize="9" fontWeight="700" fill="#94a3b8">DESKTOP</text>
+                    <text x={CX} y={CY - 6} textAnchor="middle" fontSize="18" fontWeight="900" className="fill-slate-900 dark:fill-white">58%</text>
+                    <text x={CX} y={CY + 14} textAnchor="middle" fontSize="9" fontWeight="700" className="fill-slate-400 dark:fill-slate-500">DESKTOP</text>
                 </svg>
             </div>
             <div className="space-y-3 flex-1">
@@ -222,12 +222,12 @@ const DonutChart = ({ devices }) => {
                     <div key={i} className="flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
                             <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: colors[i] }} />
-                            <div className="flex items-center gap-1.5 text-[13px] font-bold text-slate-600">
+                            <div className="flex items-center gap-1.5 text-[13px] font-bold text-slate-600 dark:text-slate-300">
                                 <span className="text-slate-400">{d.icon}</span>
                                 {d.label}
                             </div>
                         </div>
-                        <span className="text-[13px] font-black text-slate-800">{d.pct}%</span>
+                        <span className="text-[13px] font-black text-slate-800 dark:text-white">{d.pct}%</span>
                     </div>
                 ))}
             </div>
@@ -237,7 +237,7 @@ const DonutChart = ({ devices }) => {
 
 /* ─────────────────────── Stat Card ─────────────────────── */
 const StatCard = ({ title, value, icon, trend, up, color, sub }) => (
-    <div className="bg-white rounded-[20px] border border-slate-100 shadow-sm p-6 hover:shadow-xl hover:shadow-[#3713ec]/5 transition-all duration-300 group">
+    <div className="bg-white dark:bg-[#1e1c2e] rounded-[20px] border border-slate-100 dark:border-slate-800 shadow-sm p-6 hover:shadow-xl hover:shadow-[#3713ec]/5 dark:hover:shadow-[#3713ec]/10 transition-all duration-300 group">
         <div className="flex justify-between items-start mb-5">
             <div className={`p-3 rounded-2xl ${color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
                 {icon}
@@ -249,13 +249,13 @@ const StatCard = ({ title, value, icon, trend, up, color, sub }) => (
                 </div>
             )}
         </div>
-        <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">{title}</p>
-        <h3 className="text-3xl font-black text-slate-900 tracking-tight">{value}</h3>
+        <p className="text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase tracking-widest mb-1">{title}</p>
+        <h3 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{value}</h3>
         {sub && typeof sub === 'string' && <p className="text-[11px] text-slate-400 font-bold mt-1">{sub}</p>}
         {/* Optional breakdown bar for Success Rate */}
         {title === "Form Success Rate" && (
-            <div className="mt-4 pt-4 border-t border-slate-50">
-                <div className="flex h-1.5 w-full bg-slate-100 rounded-full overflow-hidden mb-3">
+            <div className="mt-4 pt-4 border-t border-slate-50 dark:border-slate-700">
+                <div className="flex h-1.5 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden mb-3">
                     <div className="bg-emerald-500 h-full" style={{ width: sub?.fullPct || '0%' }} />
                     <div className="bg-amber-400 h-full" style={{ width: sub?.partialPct || '0%' }} />
                 </div>
@@ -292,7 +292,7 @@ const FunnelGraph = ({ data }) => {
                             className={`w-full ${step.color} rounded-t-xl transition-all duration-500 relative group-hover:brightness-110 shadow-sm`}
                             style={{ height: `${(step.value / maxVal) * 100}%` }}
                         >
-                            <div className="absolute -top-7 left-1/2 -translate-x-1/2 font-black text-[12px] text-slate-800">
+                            <div className="absolute -top-7 left-1/2 -translate-x-1/2 font-black text-[12px] text-slate-800 dark:text-slate-200">
                                 {step.value.toLocaleString()}
                             </div>
                             <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-xl" />
@@ -428,22 +428,22 @@ const Analytics = () => {
                 {/* ── Header ── */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-4xl font-black text-slate-900 tracking-tight">Analytics</h1>
-                        <p className="text-slate-500 font-bold text-sm mt-1">Track performance across all your forms.</p>
+                        <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">Analytics</h1>
+                        <p className="text-slate-500 dark:text-slate-400 font-bold text-sm mt-1">Track performance across all your forms.</p>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
                         {/* Date range picker */}
                         <div className="relative" ref={rangeRef}>
                             <button
                                 onClick={() => setRangeOpen(o => !o)}
-                                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] font-black text-slate-600 hover:border-[#3713ec]/40 hover:bg-[#3713ec]/[0.03] transition-all shadow-sm"
+                                className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#1e1c2e] border border-slate-200 dark:border-slate-700 rounded-xl text-[13px] font-black text-slate-600 dark:text-slate-300 hover:border-[#3713ec]/40 hover:bg-[#3713ec]/[0.03] transition-all shadow-sm"
                             >
                                 <Filter size={14} className="text-slate-400" />
                                 {range}
                                 <ChevronDown size={14} className={`text-slate-400 transition-transform ${rangeOpen ? 'rotate-180' : ''}`} />
                             </button>
                             {rangeOpen && (
-                                <div className="absolute right-0 top-12 bg-white border border-slate-100 rounded-2xl shadow-2xl shadow-slate-200/80 py-2 w-44 z-50">
+                                <div className="absolute right-0 top-12 bg-white dark:bg-[#1e1c2e] border border-slate-100 dark:border-slate-700 rounded-2xl shadow-2xl shadow-slate-200/80 dark:shadow-black/30 py-2 w-44 z-50">
                                     {RANGE_OPTIONS.map(opt => (
                                         <button
                                             key={opt}
@@ -458,7 +458,7 @@ const Analytics = () => {
                                                     setEndDate('');
                                                 }
                                             }}
-                                            className={`w-full flex items-center gap-2 px-4 py-2.5 text-[13px] font-bold transition-colors ${range === opt ? 'text-[#3713ec] bg-[#3713ec]/5' : 'text-slate-600 hover:bg-slate-50'}`}
+                                            className={`w-full flex items-center gap-2 px-4 py-2.5 text-[13px] font-bold transition-colors ${range === opt ? 'text-[#3713ec] bg-[#3713ec]/5' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                                         >
                                             {range === opt && <div className="w-1.5 h-1.5 rounded-full bg-[#3713ec]" />}
                                             {opt}
@@ -472,7 +472,7 @@ const Analytics = () => {
                         <div className="relative" ref={formSearchRef}>
                             <button
                                 onClick={() => setFormSearchOpen(o => !o)}
-                                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] font-black text-slate-600 hover:border-[#3713ec]/40 hover:bg-[#3713ec]/[0.03] transition-all shadow-sm w-full md:w-[220px]"
+                                className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#1e1c2e] border border-slate-200 dark:border-slate-700 rounded-xl text-[13px] font-black text-slate-600 dark:text-slate-300 hover:border-[#3713ec]/40 hover:bg-[#3713ec]/[0.03] transition-all shadow-sm w-full md:w-[220px]"
                             >
                                 <div className="truncate flex-1 text-left">
                                     {selectedFormId === 'all' 
@@ -483,9 +483,9 @@ const Analytics = () => {
                             </button>
 
                             {formSearchOpen && (
-                                <div className="absolute right-0 top-12 bg-white border border-slate-100 rounded-2xl shadow-2xl shadow-slate-200/80 w-[280px] z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                                <div className="absolute right-0 top-12 bg-white dark:bg-[#1e1c2e] border border-slate-100 dark:border-slate-700 rounded-2xl shadow-2xl shadow-slate-200/80 dark:shadow-black/30 w-[280px] z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
                                     <div className="p-2 border-b border-slate-50">
-                                        <div className="bg-slate-50 rounded-xl flex items-center px-3 py-2">
+                                        <div className="bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center px-3 py-2">
                                             <Search size={14} className="text-slate-400 mr-2 shrink-0" />
                                             <input 
                                                 type="text" 
@@ -493,7 +493,7 @@ const Analytics = () => {
                                                 placeholder="Search forms..."
                                                 value={formSearchQuery}
                                                 onChange={(e) => setFormSearchQuery(e.target.value)}
-                                                className="bg-transparent border-none text-[13px] font-bold text-slate-700 focus:ring-0 p-0 w-full outline-none placeholder:text-slate-400"
+                                                className="bg-transparent border-none text-[13px] font-bold text-slate-700 dark:text-slate-200 focus:ring-0 p-0 w-full outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                             />
                                         </div>
                                     </div>
@@ -505,7 +505,7 @@ const Analytics = () => {
                                                 setFormSearchOpen(false);
                                                 setFormSearchQuery('');
                                             }}
-                                            className={`w-full flex items-center px-4 py-2.5 text-left transition-colors ${selectedFormId === 'all' ? 'bg-[#3713ec]/5' : 'hover:bg-slate-50'}`}
+                                            className={`w-full flex items-center px-4 py-2.5 text-left transition-colors ${selectedFormId === 'all' ? 'bg-[#3713ec]/5' : 'hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                                         >
                                             <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center mr-3 shrink-0">
                                                 <FileText size={14} className="text-slate-500" />
@@ -532,7 +532,7 @@ const Analytics = () => {
                                                     setFormSearchOpen(false);
                                                     setFormSearchQuery('');
                                                 }}
-                                                className={`w-full flex items-center px-4 py-2.5 text-left transition-colors group ${selectedFormId === f.id ? 'bg-[#3713ec]/5' : 'hover:bg-slate-50'}`}
+                                                className={`w-full flex items-center px-4 py-2.5 text-left transition-colors group ${selectedFormId === f.id ? 'bg-[#3713ec]/5' : 'hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                                             >
                                                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center mr-3 shrink-0 transition-colors ${selectedFormId === f.id ? 'bg-[#3713ec] text-white' : 'bg-[#3713ec]/5 text-[#3713ec] group-hover:bg-[#3713ec] group-hover:text-white'}`}>
                                                     <FileText size={14} />
@@ -556,24 +556,24 @@ const Analytics = () => {
                         </div>
 
                         {range === 'Custom' && (
-                            <div className="flex items-center gap-2 bg-white border border-[#3713ec]/20 rounded-xl px-3 py-1.5 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300">
+                            <div className="flex items-center gap-2 bg-white dark:bg-[#1e1c2e] border border-[#3713ec]/20 dark:border-[#a855f7]/20 rounded-xl px-3 py-1.5 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300">
                                 <div className="flex flex-col">
-                                    <span className="text-[10px] font-black text-[#3713ec] uppercase tracking-widest px-1">From</span>
+                                    <span className="text-[10px] font-black text-[#3713ec] dark:text-[#a855f7] uppercase tracking-widest px-1">From</span>
                                     <input 
                                         type="date" 
                                         value={startDate}
                                         onChange={(e) => setStartDate(e.target.value)}
-                                        className="bg-transparent border-none text-[12px] font-bold text-slate-700 focus:ring-0 p-0 h-5 cursor-pointer outline-none appearance-none"
+                                        className="bg-transparent border-none text-[12px] font-bold text-slate-700 dark:text-slate-300 focus:ring-0 p-0 h-5 cursor-pointer outline-none appearance-none"
                                     />
                                 </div>
-                                <div className="w-px h-6 bg-slate-100 mx-1" />
+                                <div className="w-px h-6 bg-slate-100 dark:bg-slate-800 mx-1" />
                                 <div className="flex flex-col">
-                                    <span className="text-[10px] font-black text-[#3713ec] uppercase tracking-widest px-1">To</span>
+                                    <span className="text-[10px] font-black text-[#3713ec] dark:text-[#a855f7] uppercase tracking-widest px-1">To</span>
                                     <input 
                                         type="date" 
                                         value={endDate}
                                         onChange={(e) => setEndDate(e.target.value)}
-                                        className="bg-transparent border-none text-[12px] font-bold text-slate-700 focus:ring-0 p-0 h-5 cursor-pointer outline-none appearance-none"
+                                        className="bg-transparent border-none text-[12px] font-bold text-slate-700 dark:text-slate-300 focus:ring-0 p-0 h-5 cursor-pointer outline-none appearance-none"
                                     />
                                 </div>
                             </div>
@@ -622,11 +622,11 @@ const Analytics = () => {
                 {/* ── Main Chart (Line) + Device Breakdown ── */}
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                     {/* Line Chart card */}
-                    <div className="xl:col-span-2 bg-white rounded-[20px] border border-slate-100 shadow-sm p-6">
+                    <div className="xl:col-span-2 bg-white dark:bg-[#1e1c2e] rounded-[20px] border border-slate-100 dark:border-slate-800 shadow-sm p-6">
                         <div className="flex items-center justify-between mb-5">
                             <div>
-                                <h2 className="text-[17px] font-black text-slate-900">Response Trend</h2>
-                                <p className="text-[12px] text-slate-400 font-bold mt-0.5">{range}</p>
+                                <h2 className="text-[17px] font-black text-slate-900 dark:text-white">Response Trend</h2>
+                                <p className="text-[12px] text-slate-400 dark:text-slate-500 font-bold mt-0.5">{range}</p>
                             </div>
                         </div>
 
@@ -642,11 +642,11 @@ const Analytics = () => {
                     </div>
 
                     {/* Device breakdown */}
-                    <div className="bg-white rounded-[20px] border border-slate-100 shadow-sm p-6 flex flex-col">
+                    <div className="bg-white dark:bg-[#1e1c2e] rounded-[20px] border border-slate-100 dark:border-slate-800 shadow-sm p-6 flex flex-col">
                         <div className="flex items-center justify-between mb-5">
                             <div>
-                                <h2 className="text-[17px] font-black text-slate-900">Device Split</h2>
-                                <p className="text-[12px] text-slate-400 font-bold mt-0.5">Traffic by device type</p>
+                                <h2 className="text-[17px] font-black text-slate-900 dark:text-white">Device Split</h2>
+                                <p className="text-[12px] text-slate-400 dark:text-slate-500 font-bold mt-0.5">Traffic by device type</p>
                             </div>
                             <button className="p-2 text-slate-300 hover:text-slate-500 rounded-xl hover:bg-slate-50 transition-all">
                                 <MoreHorizontal size={16} />
@@ -657,7 +657,7 @@ const Analytics = () => {
                         </div>
 
                         {/* Mini stats */}
-                        <div className="grid grid-cols-2 gap-3 mt-6 pt-5 border-t border-slate-50">
+                        <div className="grid grid-cols-2 gap-3 mt-6 pt-5 border-t border-slate-50 dark:border-slate-700">
                             <MiniStat label="Avg. Time" value="2m 14s" up />
                             <MiniStat label="Bounce Rate" value="24.6%" up={false} />
                         </div>
@@ -667,11 +667,11 @@ const Analytics = () => {
                 {/* ── Bar Chart (Form Performance) + Completion Funnel ── */}
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                     {/* Bar Chart */}
-                    <div className="xl:col-span-2 bg-white rounded-[20px] border border-slate-100 shadow-sm p-6">
+                    <div className="xl:col-span-2 bg-white dark:bg-[#1e1c2e] rounded-[20px] border border-slate-100 dark:border-slate-800 shadow-sm p-6">
                         <div className="flex items-center justify-between mb-6">
                             <div>
-                                <h2 className="text-[17px] font-black text-slate-900">Form Performance</h2>
-                                <p className="text-[12px] text-slate-400 font-bold mt-0.5">Responses & completion rate per form</p>
+                                <h2 className="text-[17px] font-black text-slate-900 dark:text-white">Form Performance</h2>
+                                <p className="text-[12px] text-slate-400 dark:text-slate-500 font-bold mt-0.5">Responses & completion rate per form</p>
                             </div>
                             <button className="p-2 text-slate-300 hover:text-slate-500 rounded-xl hover:bg-slate-50 transition-all">
                                 <MoreHorizontal size={16} />
@@ -691,11 +691,11 @@ const Analytics = () => {
                     </div>
 
                     {/* Funnel */}
-                    <div className="bg-white rounded-[20px] border border-slate-100 shadow-sm p-6">
+                    <div className="bg-white dark:bg-[#1e1c2e] rounded-[20px] border border-slate-100 dark:border-slate-800 shadow-sm p-6">
                         <div className="flex items-center justify-between mb-6">
                             <div>
-                                <h2 className="text-[17px] font-black text-slate-900">Conversion Funnel</h2>
-                                <p className="text-[12px] text-slate-400 font-bold mt-0.5">From views to full submissions</p>
+                                <h2 className="text-[17px] font-black text-slate-900 dark:text-white">Conversion Funnel</h2>
+                                <p className="text-[12px] text-slate-400 dark:text-slate-500 font-bold mt-0.5">From views to full submissions</p>
                             </div>
                         </div>
                         <FunnelGraph data={dynamicFunnel} />
@@ -703,11 +703,11 @@ const Analytics = () => {
                 </div>
 
                 {/* ── Top Forms Table ── */}
-                <div className="bg-white rounded-[20px] border border-slate-100 shadow-sm overflow-hidden">
-                    <div className="flex items-center justify-between px-6 py-5 border-b border-slate-50">
+                <div className="bg-white dark:bg-[#1e1c2e] rounded-[20px] border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+                    <div className="flex items-center justify-between px-6 py-5 border-b border-slate-50 dark:border-slate-700">
                         <div>
-                            <h2 className="text-[17px] font-black text-slate-900">Top Performing Forms</h2>
-                            <p className="text-[12px] text-slate-400 font-bold mt-0.5">Ranked by total responses</p>
+                            <h2 className="text-[17px] font-black text-slate-900 dark:text-white">Top Performing Forms</h2>
+                            <p className="text-[12px] text-slate-400 dark:text-slate-500 font-bold mt-0.5">Ranked by total responses</p>
                         </div>
                         <button 
                             onClick={() => navigate('/forms')}
@@ -719,7 +719,7 @@ const Analytics = () => {
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
-                                <tr className="border-b border-slate-50">
+                                <tr className="border-b border-slate-50 dark:border-slate-700">
                                     {['#', 'Form Name', 'Responses', 'Views'].map(col => (
                                         <th key={col} className="text-left px-6 py-3.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                                             {col}
@@ -727,19 +727,19 @@ const Analytics = () => {
                                     ))}
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-50">
+                            <tbody className="divide-y divide-slate-50 dark:divide-slate-700/50">
                                 {data.formPerformance.map((f, i) => (
-                                    <tr key={i} className="hover:bg-slate-50/60 transition-colors group">
+                                    <tr key={i} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors group">
                                         <td className="px-6 py-4">
                                             <span className={`w-7 h-7 rounded-xl flex items-center justify-center text-[11px] font-black ${i === 0 ? 'bg-amber-100 text-amber-600' : i === 1 ? 'bg-slate-100 text-slate-500' : 'bg-slate-50 text-slate-400'}`}>
                                                 {i + 1}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 font-bold text-slate-800 text-[14px] group-hover:text-[#3713ec] transition-colors">
+                                        <td className="px-6 py-4 font-bold text-slate-800 dark:text-slate-200 text-[14px] group-hover:text-[#3713ec] transition-colors">
                                             {f.label}
                                         </td>
-                                        <td className="px-6 py-4 text-[14px] font-black text-slate-700">{f.responses.toLocaleString()}</td>
-                                        <td className="px-6 py-4 text-[13px] font-bold text-slate-500">{f.views.toLocaleString()}</td>
+                                        <td className="px-6 py-4 text-[14px] font-black text-slate-700 dark:text-slate-300">{f.responses.toLocaleString()}</td>
+                                        <td className="px-6 py-4 text-[13px] font-bold text-slate-500 dark:text-slate-400">{f.views.toLocaleString()}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -754,10 +754,10 @@ const Analytics = () => {
 
 /* ── Mini stat helper ── */
 const MiniStat = ({ label, value, up }) => (
-    <div className="bg-slate-50 rounded-xl p-3">
-        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{label}</p>
+    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3">
+        <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">{label}</p>
         <div className="flex items-center gap-1.5">
-            <span className="text-[15px] font-black text-slate-800">{value}</span>
+            <span className="text-[15px] font-black text-slate-800 dark:text-white">{value}</span>
             <span className={`text-[10px] font-black ${up ? 'text-emerald-500' : 'text-red-400'}`}>
                 {up ? '↑' : '↓'}
             </span>

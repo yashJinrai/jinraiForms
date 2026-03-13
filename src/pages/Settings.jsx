@@ -139,13 +139,13 @@ const Settings = () => {
                 {/* Header Section */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                     <div className="space-y-1">
-                        <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">System Settings</h1>
-                        <p className="text-slate-500 font-bold text-sm tracking-wide">Manage your account preferences and global configuration.</p>
+                        <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">System Settings</h1>
+                        <p className="text-slate-500 dark:text-slate-400 font-bold text-sm tracking-wide">Manage your account preferences and global configuration.</p>
                     </div>
                     <div className="flex items-center gap-3 w-full sm:w-auto">
                         <button
                             onClick={() => checkAuth()}
-                            className="flex-1 sm:flex-none px-6 py-3 bg-white text-slate-900 font-black rounded-xl border border-slate-100 hover:bg-slate-50 transition-all shadow-sm text-sm"
+                            className="flex-1 sm:flex-none px-6 py-3 bg-white dark:bg-[#1a1829] text-slate-900 dark:text-slate-300 font-black rounded-xl border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm text-sm"
                         >
                             Reset
                         </button>
@@ -163,7 +163,7 @@ const Settings = () => {
                 <div className="flex flex-col xl:flex-row gap-10">
                     {/* Settings Navigation */}
                     <aside className="w-full xl:w-72 shrink-0">
-                        <nav className="p-2 sm:p-3 bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/40 flex xl:flex-col gap-1 overflow-x-auto no-scrollbar xl:overflow-x-visible">
+                        <nav className="p-2 sm:p-3 bg-white dark:bg-[#1a1829] rounded-3xl border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/40 dark:shadow-none flex xl:flex-col gap-1 overflow-x-auto no-scrollbar xl:overflow-x-visible transition-colors">
                             {tabs.map((tab) => (
                                 <button
                                     key={tab.name}
@@ -171,7 +171,7 @@ const Settings = () => {
                                     className={`flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3 sm:py-4 rounded-2xl font-black transition-all duration-300 whitespace-nowrap xl:w-full
                                         ${activeTab === tab.name
                                             ? 'bg-[#3713ec] text-white shadow-lg shadow-[#3713ec]/20'
-                                            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}
+                                            : 'text-slate-500 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-300'}`}
                                 >
                                     <span className={activeTab === tab.name ? 'text-white' : 'text-slate-400'}>
                                         {cloneElement(tab.icon, { size: 18 })}
@@ -184,12 +184,12 @@ const Settings = () => {
                             ))}
                         </nav>
 
-                        <div className="mt-8 p-6 bg-rose-50/50 rounded-3xl border border-rose-100/50">
-                            <h4 className="text-rose-600 font-black text-sm uppercase tracking-widest mb-4">Danger Zone</h4>
+                        <div className="mt-8 p-6 bg-rose-50/50 dark:bg-rose-500/5 rounded-3xl border border-rose-100/50 dark:border-rose-500/10 mb-5">
+                            <h4 className="text-rose-600 dark:text-rose-500 font-black text-sm uppercase tracking-widest mb-4">Danger Zone</h4>
                             <div className="space-y-4">
                                 <button
                                     onClick={() => setIsLogoutModalOpen(true)}
-                                    className="w-full flex items-center justify-between p-4 bg-white rounded-2xl border border-rose-100 text-rose-600 font-bold hover:bg-rose-50 hover:shadow-md transition-all group"
+                                    className="w-full flex items-center justify-between p-4 bg-white dark:bg-slate-900/50 rounded-2xl border border-rose-100 dark:border-rose-500/20 text-rose-600 dark:text-rose-500 font-bold hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:shadow-md transition-all group"
                                 >
                                     <div className="flex items-center gap-3">
                                         <LogOut size={18} />
@@ -212,30 +212,30 @@ const Settings = () => {
                     {/* Settings Content Area */}
                     <main className="flex-1">
                         {activeTab === 'Account' && (
-                            <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 shadow-xl shadow-slate-200/40 border border-slate-50 space-y-10 animate-in fade-in zoom-in-95 duration-500">
+                            <div className="bg-white dark:bg-[#1a1829] rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 shadow-xl shadow-slate-200/40 dark:shadow-none border border-slate-50 dark:border-slate-800 space-y-10 animate-in fade-in zoom-in-95 duration-500 transition-colors">
                                 <div>
-                                    <h2 className="text-2xl font-black text-slate-900 mb-2">Account Profile</h2>
-                                    <p className="text-slate-500 font-bold text-sm">Update your public information and avatar.</p>
+                                    <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Account Profile</h2>
+                                    <p className="text-slate-500 dark:text-slate-400 font-bold text-sm">Update your public information and avatar.</p>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="space-y-3">
-                                        <label className="text-sm font-black text-slate-700 uppercase tracking-widest px-1">Display Name</label>
+                                        <label className="text-sm font-black text-slate-700 dark:text-slate-500 uppercase tracking-widest px-1">Display Name</label>
                                         <input
                                             type="text"
                                             value={formData.name}
                                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-[#3713ec]/20 focus:bg-white focus:ring-4 focus:ring-[#3713ec]/5 rounded-2xl outline-none font-bold text-slate-700 transition-all"
+                                            className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-2 border-transparent focus:border-[#3713ec]/20 dark:focus:border-[#a855f7]/20 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-[#3713ec]/5 dark:focus:ring-[#a855f7]/5 rounded-2xl outline-none font-bold text-slate-700 dark:text-slate-300 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-700"
                                             placeholder="Enter your name"
                                         />
                                     </div>
                                     <div className="space-y-3">
-                                        <label className="text-sm font-black text-slate-700 uppercase tracking-widest px-1">Location</label>
+                                        <label className="text-sm font-black text-slate-700 dark:text-slate-500 uppercase tracking-widest px-1">Location</label>
                                         <input
                                             type="text"
                                             value={formData.location}
                                             onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                                            className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-[#3713ec]/20 focus:bg-white focus:ring-4 focus:ring-[#3713ec]/5 rounded-2xl outline-none font-bold text-slate-700 transition-all"
+                                            className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-2 border-transparent focus:border-[#3713ec]/20 dark:focus:border-[#a855f7]/20 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-[#3713ec]/5 dark:focus:ring-[#a855f7]/5 rounded-2xl outline-none font-bold text-slate-700 dark:text-slate-300 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-700"
                                             placeholder="e.g. San Francisco, CA"
                                         />
                                     </div>
@@ -280,12 +280,12 @@ const Settings = () => {
                                         />
                                     </div>
                                     <div className="md:col-span-2 space-y-3">
-                                        <label className="text-sm font-black text-slate-700 uppercase tracking-widest px-1">Public Biography</label>
+                                        <label className="text-sm font-black text-slate-700 dark:text-slate-500 uppercase tracking-widest px-1">Public Biography</label>
                                         <textarea
                                             rows="4"
                                             value={formData.bio}
                                             onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                                            className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-[#3713ec]/20 focus:bg-white focus:ring-4 focus:ring-[#3713ec]/5 rounded-2xl outline-none font-bold text-slate-700 transition-all resize-none"
+                                            className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-2 border-transparent focus:border-[#3713ec]/20 dark:focus:border-[#a855f7]/20 focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-[#3713ec]/5 dark:focus:ring-[#a855f7]/5 rounded-2xl outline-none font-bold text-slate-700 dark:text-slate-300 transition-all resize-none placeholder:text-slate-300 dark:placeholder:text-slate-700"
                                             placeholder="Tell us about yourself..."
                                         />
                                     </div>
@@ -309,10 +309,10 @@ const Settings = () => {
                         )}
 
                         {activeTab === 'Notifications' && (
-                            <div className="bg-white rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 shadow-xl shadow-slate-200/40 border border-slate-50 space-y-8 animate-in fade-in zoom-in-95 duration-500">
+                            <div className="bg-white dark:bg-[#1a1829] rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 shadow-xl shadow-slate-200/40 dark:shadow-none border border-slate-50 dark:border-slate-800 space-y-8 animate-in fade-in zoom-in-95 duration-500 transition-colors">
                                 <div>
-                                    <h3 className="text-xl sm:text-2xl font-black text-slate-900 mb-2">Notification Preferences</h3>
-                                    <p className="text-slate-500 font-bold text-sm">Control how and when you want to be notified.</p>
+                                    <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mb-2">Notification Preferences</h3>
+                                    <p className="text-slate-500 dark:text-slate-400 font-bold text-sm">Control how and when you want to be notified.</p>
                                 </div>
 
                                 <div className="space-y-4">
@@ -321,19 +321,19 @@ const Settings = () => {
                                         { id: 'browserPush', title: 'Browser Push Notifications', desc: 'Real-time alerts directly in your browser.', icon: <Smartphone size={20} /> },
                                         { id: 'securityAlerts', title: 'Security Alerts', desc: 'Important alerts about account security and login attempts.', icon: <Shield size={20} /> }
                                     ].map((item) => (
-                                        <div key={item.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 sm:p-6 rounded-3xl border border-slate-100 hover:border-[#3713ec]/20 transition-all group gap-4">
+                                        <div key={item.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 sm:p-6 rounded-3xl border border-slate-100 dark:border-slate-800 hover:border-[#3713ec]/20 dark:hover:border-[#a855f7]/20 transition-all group gap-4">
                                             <div className="flex items-center gap-4 sm:gap-5">
-                                                <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl sm:rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-[#3713ec]/5 group-hover:text-[#3713ec] transition-colors shrink-0">
+                                                <div className="w-10 sm:w-12 h-10 sm:h-12 rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-slate-900/50 text-slate-400 dark:text-slate-600 flex items-center justify-center group-hover:bg-[#3713ec]/5 dark:group-hover:bg-[#a855f7]/5 group-hover:text-[#3713ec] dark:group-hover:text-[#a855f7] transition-colors shrink-0">
                                                     {React.cloneElement(item.icon, { size: 18 })}
                                                 </div>
                                                 <div>
-                                                    <h4 className="font-black text-slate-900 text-sm sm:text-base">{item.title}</h4>
-                                                    <p className="text-slate-500 font-bold text-[10px] uppercase tracking-wider mt-0.5">{item.desc}</p>
+                                                    <h4 className="font-black text-slate-900 dark:text-white text-sm sm:text-base">{item.title}</h4>
+                                                    <p className="text-slate-500 dark:text-slate-500 font-bold text-[10px] uppercase tracking-wider mt-0.5">{item.desc}</p>
                                                 </div>
                                             </div>
                                             <button
                                                 onClick={() => toggleNotification(item.id)}
-                                                className={`w-14 h-8 rounded-full relative transition-all duration-300 ${notifications[item.id] ? 'bg-[#3713ec]' : 'bg-slate-200'}`}
+                                                className={`w-14 h-8 rounded-full relative transition-all duration-300 ${notifications[item.id] ? 'bg-[#3713ec]' : 'bg-slate-200 dark:bg-slate-800'}`}
                                             >
                                                 <div className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ${notifications[item.id] ? 'left-7' : 'left-1'}`} />
                                             </button>
@@ -344,12 +344,12 @@ const Settings = () => {
                         )}
 
                         {activeTab !== 'Account' && activeTab !== 'Notifications' && (
-                            <div className="h-96 bg-white rounded-[2.5rem] p-10 shadow-xl shadow-slate-200/40 border border-slate-50 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in-95 duration-500">
-                                <div className="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 mb-6">
+                            <div className="h-96 bg-white dark:bg-[#1a1829] rounded-[2.5rem] p-10 shadow-xl shadow-slate-200/40 dark:shadow-none border border-slate-50 dark:border-slate-800 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in-95 duration-500 transition-colors">
+                                <div className="w-20 h-20 rounded-full bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center text-slate-300 dark:text-slate-700 mb-6">
                                     {tabs.find(t => t.name === activeTab)?.icon}
                                 </div>
-                                <h3 className="text-2xl font-black text-slate-900 mb-2">{activeTab} Settings</h3>
-                                <p className="text-slate-500 font-bold text-sm max-w-sm">This section is currently under development. Please check back later for more options.</p>
+                                <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">{activeTab} Settings</h3>
+                                <p className="text-slate-500 dark:text-slate-500 font-bold text-sm max-w-sm">This section is currently under development. Please check back later for more options.</p>
                             </div>
                         )}
                     </main>

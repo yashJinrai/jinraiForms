@@ -7,7 +7,7 @@ const DashboardLayout = ({ children }) => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC]">
+        <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0f0e17]">
             {/* Sidebar */}
             <Sidebar 
                 isOpen={isSidebarOpen} 

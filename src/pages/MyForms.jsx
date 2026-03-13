@@ -20,9 +20,9 @@ const GRADIENTS = [
 const STATUS_TABS = ['All Forms', 'Active', 'Drafts', 'Archived'];
 
 const statusConfig = {
-    Active: { label: 'ACTIVE', className: 'bg-emerald-100 text-emerald-700' },
-    Draft: { label: 'DRAFT', className: 'bg-slate-100 text-slate-500' },
-    Archived: { label: 'ARCHIVED', className: 'bg-amber-100 text-amber-600' },
+    Active: { label: 'ACTIVE', className: 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-500' },
+    Draft: { label: 'DRAFT', className: 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400' },
+    Archived: { label: 'ARCHIVED', className: 'bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-500' },
 };
 
 const FormCard = ({ form, onEdit, onDelete, onDuplicate, onArchiveToggle, onShare }) => {
@@ -31,7 +31,7 @@ const FormCard = ({ form, onEdit, onDelete, onDuplicate, onArchiveToggle, onShar
     const isDraft = form.status === 'Draft';
 
     return (
-        <div className="bg-white rounded-[20px] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/60 transition-all duration-400 flex flex-col overflow-hidden group">
+        <div className="bg-white dark:bg-[#1e1c2e] rounded-[20px] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl hover:shadow-slate-200/60 dark:hover:shadow-[#3713ec]/10 transition-all duration-400 flex flex-col overflow-hidden group">
             {/* Visual Header */}
             <div className={`h-32 bg-gradient-to-br ${form.bgGradient || 'from-sky-50 via-blue-50 to-indigo-100'} relative`}>
                 <span className={`absolute top-3 right-3 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full ${cfg.className}`}>
@@ -42,7 +42,7 @@ const FormCard = ({ form, onEdit, onDelete, onDuplicate, onArchiveToggle, onShar
             {/* Content */}
             <div className="p-5 flex-1 flex flex-col">
                 <div className="flex items-start justify-between gap-2 mb-1">
-                    <h3 className="font-black text-slate-900 text-[15px] leading-snug group-hover:text-[#3713ec] transition-colors line-clamp-2">
+                    <h3 className="font-black text-slate-900 dark:text-white text-[15px] leading-snug group-hover:text-[#3713ec] transition-colors line-clamp-2">
                         {form.title}
                     </h3>
                 </div>
@@ -53,13 +53,13 @@ const FormCard = ({ form, onEdit, onDelete, onDuplicate, onArchiveToggle, onShar
                 {/* Responses row */}
                 <div className="flex items-end justify-between mt-auto mb-4">
                     <div>
-                        <p className="text-2xl font-black text-slate-900">{(form.responsesCount || 0).toLocaleString()}</p>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Responses</p>
+                        <p className="text-2xl font-black text-slate-900 dark:text-white">{(form.responsesCount || 0).toLocaleString()}</p>
+                        <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Responses</p>
                     </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-2 pt-3 border-t border-slate-50">
+                <div className="flex items-center gap-2 pt-3 border-t border-slate-50 dark:border-slate-800">
                     <button
                         onClick={() => onEdit(form._id)}
                         className="flex-1 py-2 bg-[#3713ec] text-white text-[12px] font-black rounded-xl hover:bg-[#2a0fd4] transition-all flex items-center justify-center gap-1.5"
@@ -68,7 +68,7 @@ const FormCard = ({ form, onEdit, onDelete, onDuplicate, onArchiveToggle, onShar
                     </button>
                     <button 
                         onClick={() => onShare(form._id)}
-                        className="p-2 bg-slate-50 text-slate-500 hover:bg-slate-100 rounded-xl transition-all"
+                        className="p-2 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-all"
                         title="Copy Form Link"
                     >
                         <Share2 size={15} />
@@ -77,12 +77,12 @@ const FormCard = ({ form, onEdit, onDelete, onDuplicate, onArchiveToggle, onShar
                     <div className="relative">
                         <button
                             onClick={() => setMenuOpen(o => !o)}
-                            className="p-2 bg-slate-50 text-slate-500 hover:bg-slate-100 rounded-xl transition-all"
+                            className="p-2 bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all"
                         >
                             <MoreHorizontal size={15} />
                         </button>
                         {menuOpen && (
-                            <div className="absolute right-0 bottom-10 bg-white border border-slate-100 rounded-2xl shadow-2xl shadow-slate-200/80 py-2 w-44 z-50">
+                            <div className="absolute right-0 bottom-10 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-2xl shadow-slate-200/80 dark:shadow-none py-2 w-44 z-50">
                                 <MenuItem
                                     icon={<Copy size={14} />}
                                     label="Duplicate"
@@ -101,11 +101,11 @@ const FormCard = ({ form, onEdit, onDelete, onDuplicate, onArchiveToggle, onShar
                                     label={form.status === 'Archived' ? 'Unarchive' : 'Archive'}
                                     onClick={() => { onArchiveToggle(form._id, form.status); setMenuOpen(false); }}
                                 />
-                                <div className="h-px bg-slate-100 my-1" />
+                                <div className="h-px bg-slate-100 dark:bg-slate-800 my-1" />
                                 <MenuItem
                                     icon={<Trash2 size={14} />}
                                     label="Delete"
-                                    className="text-red-500 hover:bg-red-50"
+                                    className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"
                                     onClick={() => { onDelete(form._id); setMenuOpen(false); }}
                                 />
                             </div>
@@ -117,7 +117,7 @@ const FormCard = ({ form, onEdit, onDelete, onDuplicate, onArchiveToggle, onShar
     );
 };
 
-const MenuItem = ({ icon, label, className = 'text-slate-600 hover:bg-slate-50', onClick }) => (
+const MenuItem = ({ icon, label, className = 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800', onClick }) => (
     <button
         onClick={onClick}
         className={`w-full flex items-center gap-3 px-4 py-2 text-[13px] font-bold transition-colors ${className}`}
@@ -129,13 +129,13 @@ const MenuItem = ({ icon, label, className = 'text-slate-600 hover:bg-slate-50',
 const NewFormCard = ({ onCreate }) => (
     <button
         onClick={onCreate}
-        className="flex flex-col items-center justify-center bg-white border-2 border-dashed border-slate-200 rounded-[20px] hover:border-[#3713ec] hover:bg-[#3713ec]/[0.03] transition-all duration-300 group min-h-[280px]"
+        className="flex flex-col items-center justify-center bg-white dark:bg-[#1e1c2e] border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-[20px] hover:border-[#3713ec] hover:bg-[#3713ec]/[0.03] dark:hover:bg-[#3713ec]/10 transition-all duration-300 group min-h-[280px]"
     >
-        <div className="w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 group-hover:bg-[#3713ec] group-hover:text-white flex items-center justify-center transition-all duration-300 mb-3 shadow-sm">
+        <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-400 group-hover:bg-[#3713ec] group-hover:text-white flex items-center justify-center transition-all duration-300 mb-3 shadow-sm">
             <Plus size={22} />
         </div>
-        <p className="font-black text-slate-700 group-hover:text-[#3713ec] transition-colors text-[14px]">New Form</p>
-        <p className="text-[12px] text-slate-400 mt-1">Start from a template or scratch</p>
+        <p className="font-black text-slate-700 dark:text-white group-hover:text-[#3713ec] transition-colors text-[14px]">New Form</p>
+        <p className="text-[12px] text-slate-400 dark:text-slate-500 mt-1">Start from a template or scratch</p>
     </button>
 );
 
@@ -263,8 +263,8 @@ const MyForms = () => {
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="text-center sm:text-left">
-                        <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">My Forms</h1>
-                        <p className="text-slate-500 font-bold text-sm mt-1">Manage and track your active data collection forms.</p>
+                        <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">My Forms</h1>
+                        <p className="text-slate-500 dark:text-slate-400 font-bold text-sm mt-1">Manage and track your active data collection forms.</p>
                     </div>
                     <button
                         onClick={handleCreate}
@@ -276,7 +276,7 @@ const MyForms = () => {
                 </div>
 
                 {/* Tabs + Search row */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex gap-1 overflow-x-auto no-scrollbar scroll-smooth -mb-px">
                         {STATUS_TABS.map(tab => (
                             <button
@@ -284,7 +284,7 @@ const MyForms = () => {
                                 onClick={() => setActiveTab(tab)}
                                 className={`px-4 py-2.5 text-[13px] font-black transition-all border-b-2 whitespace-nowrap ${activeTab === tab
                                     ? 'border-[#3713ec] text-[#3713ec]'
-                                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                                    : 'border-transparent text-slate-500 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'
                                     }`}
                             >
                                 {tab}
@@ -316,9 +316,9 @@ const MyForms = () => {
                         </div>
 
                         {filtered.length === 0 && (
-                            <div className="text-center py-20 text-slate-400">
+                            <div className="text-center py-20 text-slate-400 dark:text-slate-600">
                                 <MessageSquare size={40} className="mx-auto mb-3 opacity-30" />
-                                <p className="font-black text-lg">No forms found</p>
+                                <p className="font-black text-lg text-slate-900 dark:text-white">No forms found</p>
                                 <p className="text-sm mt-1">Try a different filter or create a new form.</p>
                             </div>
                         )}

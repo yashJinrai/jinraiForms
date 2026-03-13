@@ -10,20 +10,20 @@ const Login = () => {
     return (
         <div className="flex h-screen min-h-screen max-w-full">
             {/* Left Side: Form */}
-            <div className="flex flex-col justify-center items-center w-full lg:w-1/2 p-8 md:p-16">
+            <div className="flex flex-col justify-center items-center w-full lg:w-1/2 p-8 md:p-16 bg-white dark:bg-[#0f0e17]">
                 <div className="w-full max-w-md">
                     {/* Logo */}
                     <div className="flex items-center gap-2 mb-10">
                         <div className="w-10 h-10 p-1 bg-white rounded-lg flex items-center justify-center">
                             <img src={logo} alt="JinraiForms" />
                         </div>
-                        <span className="text-[#0F172A] text-2xl font-black tracking-tight">JinraiForms</span>
+                        <span className="text-[#0F172A] dark:text-white text-2xl font-black tracking-tight">JinraiForms</span>
                     </div>
 
                     {/* Welcome */}
                     <div className="mb-8">
-                        <h1 className="text-[#0F172A] text-3xl font-extrabold tracking-tight mb-2">Welcome back</h1>
-                        <p className="text-[#64748B]">Please enter your details to sign in to your account.</p>
+                        <h1 className="text-[#0F172A] dark:text-white text-3xl font-extrabold tracking-tight mb-2">Welcome back</h1>
+                        <p className="text-[#64748B] dark:text-slate-400">Please enter your details to sign in to your account.</p>
                     </div>
 
                     {/* Form */}
@@ -31,7 +31,7 @@ const Login = () => {
 
                     {/* Signup link */}
                     <div className="mt-4 text-center">
-                        <p className="text-[#475569] text-sm font-regular">
+                        <p className="text-[#475569] dark:text-slate-400 text-sm font-regular">
                             Don't have an account?{' '}
                             <a href="/" className="text-[#3713EC] font-bold hover:underline ml-1 transition-all">Create an account</a>
                         </p>

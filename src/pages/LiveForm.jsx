@@ -8,6 +8,7 @@ import {
     Layers, Download, Printer
 } from 'lucide-react';
 import { useNotification } from '../context/NotificationContext';
+import { getImageUrl } from '../lib/utils';
 import logo from '../assets/images/JLogobg.png';
 
 const formatSocialLink = (url) => {
@@ -414,7 +415,7 @@ const LiveForm = () => {
                     {/* Banner Image */}
                     {form.settings?.bannerImage && form.settings.bannerImage.trim() !== '' && (
                         <div className="w-full h-32 sm:h-48 rounded-[24px] sm:rounded-[32px] overflow-hidden border border-slate-100 shadow-xl mb-2 sm:mb-4">
-                            <img src={form.settings.bannerImage} alt="Form Banner" className="w-full h-full object-cover" />
+                            <img src={getImageUrl(form.settings.bannerImage)} alt="Form Banner" className="w-full h-full object-cover" />
                         </div>
                     )}
 
@@ -1033,7 +1034,7 @@ const renderField = (field, onChange, value = '', themeColor = '#3713ec', readOn
         case 'image':
             return field.imageUrl ? (
                 <div className="rounded-2xl overflow-hidden border border-slate-100 shadow-sm">
-                    <img src={field.imageUrl} alt={field.label} className="w-full h-auto object-cover" />
+                    <img src={getImageUrl(field.imageUrl)} alt={field.label} className="w-full h-auto object-cover" />
                 </div>
             ) : (
                 <div className="p-8 bg-slate-50 rounded-2xl text-center text-slate-300 font-bold border-2 border-dashed border-slate-100 italic">

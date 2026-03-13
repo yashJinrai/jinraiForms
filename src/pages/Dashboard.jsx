@@ -116,8 +116,8 @@ const Dashboard = () => {
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="space-y-1">
-                        <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">Form Dashboard</h1>
-                        <p className="text-slate-500 font-bold text-sm tracking-wide">Manage your active forms and analyze responses.</p>
+                        <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">Form Dashboard</h1>
+                        <p className="text-slate-500 dark:text-slate-400 font-bold text-sm tracking-wide">Manage your active forms and analyze responses.</p>
                     </div>
                     <button
                         onClick={() => navigate('/forms/create')}
@@ -139,22 +139,22 @@ const Dashboard = () => {
                 <div className="space-y-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Active Forms</h2>
-                            <span className="px-3 py-1 bg-emerald-100 text-emerald-600 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                            <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Active Forms</h2>
+                            <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 rounded-lg text-[10px] font-black uppercase tracking-widest">
                                 {recentForms.length} Active
                             </span>
                         </div>
 
-                        <div className="flex items-center bg-white border border-slate-100 rounded-xl p-1.5 shadow-sm">
+                        <div className="flex items-center bg-white dark:bg-[#1e1c2e] border border-slate-100 dark:border-slate-800 rounded-xl p-1.5 shadow-sm">
                             <button 
                                 onClick={() => setViewType('grid')}
-                                className={`p-2 rounded-lg transition-all ${viewType === 'grid' ? 'bg-[#3713ec]/10 text-[#3713ec]' : 'text-slate-400 hover:text-slate-600'}`}
+                                className={`p-2 rounded-lg transition-all ${viewType === 'grid' ? 'bg-[#3713ec]/10 dark:bg-[#a855f7]/10 text-[#3713ec] dark:text-[#a855f7]' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
                             >
                                 <LayoutGrid size={18} />
                             </button>
                             <button 
                                 onClick={() => setViewType('list')}
-                                className={`p-2 rounded-lg transition-all ${viewType === 'list' ? 'bg-[#3713ec]/10 text-[#3713ec]' : 'text-slate-400 hover:text-slate-600'}`}
+                                className={`p-2 rounded-lg transition-all ${viewType === 'list' ? 'bg-[#3713ec]/10 dark:bg-[#a855f7]/10 text-[#3713ec] dark:text-[#a855f7]' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
                             >
                                 <List size={18} />
                             </button>
@@ -181,7 +181,7 @@ const Dashboard = () => {
                             ))}
                         </div>
                     ) : (
-                        <div className="bg-white rounded-[24px] border border-slate-100 overflow-hidden shadow-sm">
+                        <div className="bg-white dark:bg-[#1e1c2e] rounded-[24px] border border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm">
                             <div className="p-6 text-center">
                                 {/* Optional: Add empty state if no forms */}
                             </div>
@@ -189,7 +189,7 @@ const Dashboard = () => {
                                 <div className="space-y-4">
                                     <button 
                                         onClick={() => navigate('/forms/create')}
-                                        className="w-full p-4 flex items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-slate-100 text-slate-400 hover:border-[#3713ec] hover:bg-[#3713ec]/5 hover:text-[#3713ec] transition-all font-black text-sm uppercase tracking-wide"
+                                        className="w-full p-4 flex items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-600 hover:border-[#3713ec] dark:hover:border-[#a855f7] hover:bg-[#3713ec]/5 dark:hover:bg-[#a855f7]/5 hover:text-[#3713ec] dark:hover:text-[#a855f7] transition-all font-black text-sm uppercase tracking-wide"
                                     >
                                         <Plus size={18} />
                                         Create New Form
@@ -197,15 +197,15 @@ const Dashboard = () => {
                                     {recentForms.map((form) => (
                                         <div 
                                             key={form.id} 
-                                            className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border border-transparent hover:border-slate-100 hover:bg-slate-50/50 transition-all"
+                                            className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border border-transparent hover:border-slate-100 dark:hover:border-slate-700 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-all"
                                         >
                                             <div className="flex items-center gap-5 flex-1">
                                                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-[#3713ec] bg-gradient-to-br ${form.bgGradient || 'bg-[#3713ec]/5'}`}>
                                                     <MessageSquare size={20} />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <h4 className="font-black text-slate-900 group-hover:text-[#3713ec] transition-colors truncate">{form.title}</h4>
-                                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Created {form.date}</p>
+                                                    <h4 className="font-black text-slate-900 dark:text-white group-hover:text-[#3713ec] dark:group-hover:text-[#a855f7] transition-colors truncate">{form.title}</h4>
+                                                    <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Created {form.date}</p>
                                                 </div>
                                             </div>
                                             
@@ -214,8 +214,8 @@ const Dashboard = () => {
                                                     onClick={() => navigate(`/responses?formId=${form.id}`)}
                                                     className="text-right hover:scale-105 transition-transform group/resp"
                                                 >
-                                                    <p className="text-sm font-black text-slate-900 group-hover/resp:text-[#3713ec]">{form.responses}</p>
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Responses</p>
+                                                    <p className="text-sm font-black text-slate-900 dark:text-white group-hover/resp:text-[#3713ec] dark:group-hover/resp:text-[#a855f7]">{form.responses}</p>
+                                                    <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Responses</p>
                                                 </button>
                                                 
                                                 <div className="flex items-center gap-3">
@@ -226,24 +226,24 @@ const Dashboard = () => {
                                                         {form.status}
                                                     </span>
                                                     
-                                                    <div className="flex items-center gap-1.5 border-l border-slate-100 ml-2 pl-3">
+                                                    <div className="flex items-center gap-1.5 border-l border-slate-100 dark:border-slate-700 ml-2 pl-3">
                                                         <button 
                                                             onClick={() => navigate(`/responses?formId=${form.id}`)}
-                                                            className="p-2 text-slate-400 hover:text-[#3713ec] hover:bg-[#3713ec]/5 rounded-xl transition-all"
+                                                            className="p-2 text-slate-400 dark:text-slate-500 hover:text-[#3713ec] dark:hover:text-[#a855f7] hover:bg-[#3713ec]/5 dark:hover:bg-[#a855f7]/5 rounded-xl transition-all"
                                                             title="View Responses"
                                                         >
                                                             <MessageSquare size={16} />
                                                         </button>
                                                         <button 
                                                             onClick={() => navigate(`/forms/create?id=${form.id}`)}
-                                                            className="p-2 text-slate-400 hover:text-[#3713ec] hover:bg-[#3713ec]/5 rounded-xl transition-all"
+                                                            className="p-2 text-slate-400 dark:text-slate-500 hover:text-[#3713ec] dark:hover:text-[#a855f7] hover:bg-[#3713ec]/5 dark:hover:bg-[#a855f7]/5 rounded-xl transition-all"
                                                             title="Edit Form"
                                                         >
                                                             <Edit3 size={16} />
                                                         </button>
                                                         <button 
                                                             onClick={() => window.open(`/form/${form.id}`, '_blank')}
-                                                            className="p-2 text-slate-400 hover:text-[#3713ec] hover:bg-[#3713ec]/5 rounded-xl transition-all"
+                                                            className="p-2 text-slate-400 dark:text-slate-500 hover:text-[#3713ec] dark:hover:text-[#a855f7] hover:bg-[#3713ec]/5 dark:hover:bg-[#a855f7]/5 rounded-xl transition-all"
                                                             title="Preview Form"
                                                         >
                                                             <Eye size={16} />
