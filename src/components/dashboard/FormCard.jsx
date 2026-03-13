@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MoreVertical, MessageSquare, Plus, Eye, Edit2, BarChart2 } from 'lucide-react';
+import { MoreVertical, MessageSquare, Plus, Eye, Edit3, BarChart2, ExternalLink } from 'lucide-react';
 
 const FormCard = ({ id, title, date, responses, status, icon, isCreateNew, onClick, bgGradient }) => {
     const navigate = useNavigate();
@@ -24,9 +24,9 @@ const FormCard = ({ id, title, date, responses, status, icon, isCreateNew, onCli
     };
 
     return (
-        <div className="bg-white rounded-[24px] border border-slate-50 shadow-sm hover:shadow-2xl hover:shadow-[#3713ec]/10 transition-all duration-500 group overflow-hidden flex flex-col relative">
+        <div className="bg-white rounded-[24px] border border-slate-50 shadow-sm hover:shadow-2xl hover:shadow-[#3713ec]/10 transition-all duration-500 group flex flex-col relative">
             {/* Visual Header */}
-            <div className={`h-24 p-6 relative flex justify-center items-center overflow-hidden ${status === 'Paused' ? 'bg-slate-50' : (bgGradient ? `bg-gradient-to-br ${bgGradient}` : 'bg-[#3713ec]/5')
+            <div className={`h-24 p-6 relative flex justify-center items-center overflow-hidden rounded-t-[24px] ${status === 'Paused' ? 'bg-slate-50' : (bgGradient ? `bg-gradient-to-br ${bgGradient}` : 'bg-[#3713ec]/5')
                 }`}>
                 <div className="absolute top-4 right-4 z-10">
                     <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black text-white uppercase tracking-wider ${statusColors[status] || 'bg-slate-500'}`}>
@@ -63,25 +63,25 @@ const FormCard = ({ id, title, date, responses, status, icon, isCreateNew, onCli
                                 />
                                 <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-100 rounded-2xl shadow-2xl shadow-slate-200/50 py-2 z-30 animate-in fade-in zoom-in duration-200">
                                     <button 
-                                        onClick={() => navigate(`/form/${id}`)}
-                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-bold text-slate-600 hover:bg-slate-50 hover:text-[#3713ec] transition-colors"
-                                    >
-                                        <Eye size={16} />
-                                        View Form
-                                    </button>
-                                    <button 
-                                        onClick={() => navigate(`/forms/${id}/edit`)}
-                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-bold text-slate-600 hover:bg-slate-50 hover:text-[#3713ec] transition-colors"
-                                    >
-                                        <Edit2 size={16} />
-                                        Edit Form
-                                    </button>
-                                    <button 
                                         onClick={() => navigate(`/responses?formId=${id}`)}
                                         className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-bold text-slate-600 hover:bg-slate-50 hover:text-[#3713ec] transition-colors"
                                     >
-                                        <BarChart2 size={16} />
+                                        <MessageSquare size={16} />
                                         View Responses
+                                    </button>
+                                    <button 
+                                        onClick={() => navigate(`/forms/create?id=${id}`)}
+                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-bold text-slate-600 hover:bg-slate-50 hover:text-[#3713ec] transition-colors"
+                                    >
+                                        <Edit3 size={16} />
+                                        Edit Form
+                                    </button>
+                                    <button 
+                                        onClick={() => window.open(`/form/${id}`, '_blank')}
+                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-bold text-slate-600 hover:bg-slate-50 hover:text-[#3713ec] transition-colors"
+                                    >
+                                        <Eye size={16} />
+                                        Preview
                                     </button>
                                 </div>
                             </>

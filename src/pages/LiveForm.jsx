@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../lib/api';
 import {
@@ -31,6 +31,7 @@ const LiveForm = () => {
     const [passwordInput, setPasswordInput] = useState('');
     const [emailInput, setEmailInput] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const viewTracked = useRef(false);
 
     useEffect(() => {
         fetchForm();
@@ -50,6 +51,12 @@ const LiveForm = () => {
                 setPasswordPrompt(false);
                 setEmailPrompt(false);
                 setError(null);
+
+                // Track view only once per component mount to avoid double counting in development (Strict Mode)
+                if (!viewTracked.current) {
+                    api.post(`/forms/public/${id}/view`).catch(err => console.error("Tracking error:", err));
+                    viewTracked.current = true;
+                }
             } else {
                 setError("Form not found or unavailable.");
             }

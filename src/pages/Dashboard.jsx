@@ -5,16 +5,16 @@ import DashboardLayout from '../components/layout/DashboardLayout';
 import StatCard from '../components/dashboard/StatCard';
 import FormCard from '../components/dashboard/FormCard';
 import {
-    Eye,
-    Send,
-    Zap,
+    MessageSquare,
+    Edit3,
+    BarChart2,
+    ExternalLink,
     Plus,
     LayoutGrid,
     List,
-    Calendar,
-    Briefcase,
-    Mail,
-    MessageSquare
+    Send,
+    Zap,
+    Eye
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -182,7 +182,10 @@ const Dashboard = () => {
                         </div>
                     ) : (
                         <div className="bg-white rounded-[24px] border border-slate-100 overflow-hidden shadow-sm">
-                            <div className="p-6">
+                            <div className="p-6 text-center">
+                                {/* Optional: Add empty state if no forms */}
+                            </div>
+                            <div className="p-6 pt-0">
                                 <div className="space-y-4">
                                     <button 
                                         onClick={() => navigate('/forms/create')}
@@ -225,25 +228,25 @@ const Dashboard = () => {
                                                     
                                                     <div className="flex items-center gap-1.5 border-l border-slate-100 ml-2 pl-3">
                                                         <button 
-                                                            onClick={() => navigate(`/form/${form.id}`)}
-                                                            className="p-2 text-slate-400 hover:text-[#3713ec] hover:bg-[#3713ec]/5 rounded-xl transition-all"
-                                                            title="View Live Form"
-                                                        >
-                                                            <Eye size={16} />
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => navigate(`/forms/${form.id}/edit`)}
-                                                            className="p-2 text-slate-400 hover:text-[#3713ec] hover:bg-[#3713ec]/5 rounded-xl transition-all"
-                                                            title="Edit Form"
-                                                        >
-                                                            <Plus size={16} className="rotate-45 text-slate-400" />
-                                                        </button>
-                                                        <button 
                                                             onClick={() => navigate(`/responses?formId=${form.id}`)}
                                                             className="p-2 text-slate-400 hover:text-[#3713ec] hover:bg-[#3713ec]/5 rounded-xl transition-all"
                                                             title="View Responses"
                                                         >
-                                                            <Send size={16} />
+                                                            <MessageSquare size={16} />
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => navigate(`/forms/create?id=${form.id}`)}
+                                                            className="p-2 text-slate-400 hover:text-[#3713ec] hover:bg-[#3713ec]/5 rounded-xl transition-all"
+                                                            title="Edit Form"
+                                                        >
+                                                            <Edit3 size={16} />
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => window.open(`/form/${form.id}`, '_blank')}
+                                                            className="p-2 text-slate-400 hover:text-[#3713ec] hover:bg-[#3713ec]/5 rounded-xl transition-all"
+                                                            title="Preview Form"
+                                                        >
+                                                            <Eye size={16} />
                                                         </button>
                                                     </div>
                                                 </div>

@@ -9,57 +9,11 @@ import {
 } from 'lucide-react';
 
 /* ─────────────────────── Constants / Mock Data ─────────────────────── */
-const RANGE_OPTIONS = ['Last 7 days', 'Last 30 days', 'Last 3 months', 'All time'];
+const RANGE_OPTIONS = ['Last 7 days', 'Last 30 days', 'Last 3 months', 'All time', 'Custom'];
 
-const RESPONSE_TREND = [
-    { label: 'Mar 1', value: 120 },
-    { label: 'Mar 3', value: 195 },
-    { label: 'Mar 5', value: 160 },
-    { label: 'Mar 7', value: 310 },
-    { label: 'Mar 9', value: 270 },
-    { label: 'Mar 11', value: 390 },
-    { label: 'Mar 13', value: 340 },
-    { label: 'Mar 15', value: 450 },
-    { label: 'Mar 17', value: 400 },
-    { label: 'Mar 19', value: 520 },
-    { label: 'Mar 21', value: 480 },
-    { label: 'Mar 23', value: 610 },
-    { label: 'Mar 25', value: 570 },
-    { label: 'Mar 27', value: 680 },
-];
 
-const VIEW_TREND = [
-    { label: 'Mar 1', value: 800 },
-    { label: 'Mar 3', value: 950 },
-    { label: 'Mar 5', value: 870 },
-    { label: 'Mar 7', value: 1100 },
-    { label: 'Mar 9', value: 1050 },
-    { label: 'Mar 11', value: 1300 },
-    { label: 'Mar 13', value: 1200 },
-    { label: 'Mar 15', value: 1500 },
-    { label: 'Mar 17', value: 1400 },
-    { label: 'Mar 19', value: 1700 },
-    { label: 'Mar 21', value: 1600 },
-    { label: 'Mar 23', value: 1900 },
-    { label: 'Mar 25', value: 1800 },
-    { label: 'Mar 27', value: 2100 },
-];
 
-const BAR_DATA = [
-    { label: 'Contact Us', responses: 1248, completion: 84 },
-    { label: 'Job Application', responses: 864, completion: 72 },
-    { label: 'Feedback Survey', responses: 612, completion: 91 },
-    { label: 'Event Registration', responses: 452, completion: 68 },
-    { label: 'Newsletter', responses: 4120, completion: 97 },
-];
 
-const TOP_FORMS = [
-    { rank: 1, name: 'Newsletter Signups', responses: 4120, views: 5240, completion: '97%', trend: '+18%', up: true },
-    { rank: 2, name: 'Customer Feedback Survey', responses: 1248, views: 1890, completion: '84%', trend: '+12%', up: true },
-    { rank: 3, name: 'Job Application Form', responses: 864, views: 1200, completion: '72%', trend: '+5%', up: true },
-    { rank: 4, name: 'Feedback Survey', responses: 612, views: 895, completion: '91%', trend: '-2%', up: false },
-    { rank: 5, name: 'Event Registration', responses: 452, views: 665, completion: '68%', trend: '+1%', up: true },
-];
 
 const DEVICES = [
     { label: 'Desktop', pct: 58, color: 'bg-[#3713ec]', icon: <Monitor size={14} /> },
@@ -67,12 +21,6 @@ const DEVICES = [
     { label: 'Tablet', pct: 10, color: 'bg-slate-200', icon: <Tablet size={14} /> },
 ];
 
-const FUNNEL = [
-    { step: 'Views', value: 45200, pct: 100, color: 'bg-[#3713ec]' },
-    { step: 'Opened', value: 31400, pct: 69, color: 'bg-violet-500' },
-    { step: 'Started', value: 19800, pct: 44, color: 'bg-indigo-400' },
-    { step: 'Submitted', value: 12842, pct: 28, color: 'bg-blue-400' },
-];
 
 /* ─────────────────────── SVG Line Chart ─────────────────────── */
 const LineChart = ({ data, color = '#3713ec', fillColor = 'rgba(55,19,236,0.08)', label = 'Responses' }) => {
@@ -202,8 +150,7 @@ const BarChart = ({ data }) => {
                     <div className="flex items-center justify-between mb-1.5">
                         <span className="text-[13px] font-bold text-slate-700 truncate max-w-[160px]">{d.label}</span>
                         <div className="flex items-center gap-3">
-                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">{d.responses.toLocaleString()} resp.</span>
-                            <span className="text-[11px] font-black text-emerald-600">{d.completion}%</span>
+                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">{d.responses.toLocaleString()} response</span>
                         </div>
                     </div>
                     <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
@@ -315,6 +262,37 @@ const StatCard = ({ title, value, icon, trend, up, color, sub }) => (
     </div>
 );
 
+
+
+/* ─────────────────────── Funnel Bar Graph ─────────────────────── */
+const FunnelGraph = ({ data }) => {
+    const maxVal = Math.max(...data.map(d => d.value), 1);
+    return (
+        <div className="h-[280px] w-full flex items-end justify-between px-2 pt-10">
+            {data.map((step, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center h-full group">
+                    <div className="flex-1 w-full flex flex-col justify-end px-1.5">
+                        <div 
+                            className={`w-full ${step.color} rounded-t-xl transition-all duration-500 relative group-hover:brightness-110 shadow-sm`}
+                            style={{ height: `${(step.value / maxVal) * 100}%` }}
+                        >
+                            <div className="absolute -top-7 left-1/2 -translate-x-1/2 font-black text-[12px] text-slate-800">
+                                {step.value.toLocaleString()}
+                            </div>
+                            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-xl" />
+                        </div>
+                    </div>
+                    <div className="mt-4 h-10 flex items-center">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter text-center leading-[1.1] max-w-[70px]">
+                            {step.step}
+                        </span>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+};
+
 /* ─────────────────────── Main Page ─────────────────────── */
 const Analytics = () => {
     const navigate = useNavigate();
@@ -329,18 +307,21 @@ const Analytics = () => {
         totalResponses: 0,
         totalFull: 0,
         totalPartial: 0,
-        totalAbandoned: 0,
-        activeFormsCount: 0,
-        formSuccessRate: '0%',
-        avgCompletion: 0,
         uniqueRespondents: 0
     });
+
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
 
     useEffect(() => {
         const fetchAnalytics = async () => {
             try {
                 setLoading(true);
-                const res = await api.get(`/forms/analytics?range=${range}`);
+                let url = `/forms/analytics?range=${range}`;
+                if (range === 'Custom' && startDate && endDate) {
+                    url += `&startDate=${startDate}&endDate=${endDate}`;
+                }
+                const res = await api.get(url);
                 setData(res.data.data);
             } catch (err) {
                 console.error("Error fetching analytics", err);
@@ -348,8 +329,11 @@ const Analytics = () => {
                 setLoading(false);
             }
         };
-        fetchAnalytics();
-    }, [range]);
+        // Fetch only if not custom OR if custom has both dates
+        if (range !== 'Custom' || (startDate && endDate)) {
+            fetchAnalytics();
+        }
+    }, [range, startDate, endDate]);
 
     const chartData = activeChart === 'responses' ? (data.responseTrend || []) : [];
     const chartColor = activeChart === 'responses' ? '#3713ec' : '#8b5cf6';
@@ -381,6 +365,7 @@ const Analytics = () => {
             color: 'bg-violet-400' 
         }
     ];
+    
 
     if (loading) {
         return (
@@ -407,7 +392,7 @@ const Analytics = () => {
                         <div className="relative">
                             <button
                                 onClick={() => setRangeOpen(o => !o)}
-                                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] font-black text-slate-600 hover:border-[#3713ec]/40 hover:bg-[#3713ec]/[0.03] transition-all"
+                                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] font-black text-slate-600 hover:border-[#3713ec]/40 hover:bg-[#3713ec]/[0.03] transition-all shadow-sm"
                             >
                                 <Filter size={14} className="text-slate-400" />
                                 {range}
@@ -418,7 +403,17 @@ const Analytics = () => {
                                     {RANGE_OPTIONS.map(opt => (
                                         <button
                                             key={opt}
-                                            onClick={() => { setRange(opt); setRangeOpen(false); }}
+                                            onClick={() => { 
+                                                if (opt === 'Custom') {
+                                                    setData(prev => ({ ...prev, responseTrend: [], formPerformance: [] }));
+                                                }
+                                                setRange(opt); 
+                                                setRangeOpen(false); 
+                                                if (opt !== 'Custom') {
+                                                    setStartDate('');
+                                                    setEndDate('');
+                                                }
+                                            }}
                                             className={`w-full flex items-center gap-2 px-4 py-2.5 text-[13px] font-bold transition-colors ${range === opt ? 'text-[#3713ec] bg-[#3713ec]/5' : 'text-slate-600 hover:bg-slate-50'}`}
                                         >
                                             {range === opt && <div className="w-1.5 h-1.5 rounded-full bg-[#3713ec]" />}
@@ -428,6 +423,30 @@ const Analytics = () => {
                                 </div>
                             )}
                         </div>
+
+                        {range === 'Custom' && (
+                            <div className="flex items-center gap-2 bg-white border border-[#3713ec]/20 rounded-xl px-3 py-1.5 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300">
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-black text-[#3713ec] uppercase tracking-widest px-1">From</span>
+                                    <input 
+                                        type="date" 
+                                        value={startDate}
+                                        onChange={(e) => setStartDate(e.target.value)}
+                                        className="bg-transparent border-none text-[12px] font-bold text-slate-700 focus:ring-0 p-0 h-5 cursor-pointer outline-none appearance-none"
+                                    />
+                                </div>
+                                <div className="w-px h-6 bg-slate-100 mx-1" />
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-black text-[#3713ec] uppercase tracking-widest px-1">To</span>
+                                    <input 
+                                        type="date" 
+                                        value={endDate}
+                                        onChange={(e) => setEndDate(e.target.value)}
+                                        className="bg-transparent border-none text-[12px] font-bold text-slate-700 focus:ring-0 p-0 h-5 cursor-pointer outline-none appearance-none"
+                                    />
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -546,10 +565,10 @@ const Analytics = () => {
                                 <span className="w-3 h-3 rounded-full bg-gradient-to-r from-[#3713ec] to-violet-500 inline-block" />
                                 Responses
                             </span>
-                            <span className="flex items-center gap-1.5">
+                            {/* <span className="flex items-center gap-1.5">
                                 <span className="w-3 h-3 rounded-full bg-emerald-400 inline-block" />
                                 Completion %
-                            </span>
+                            </span> */}
                         </div>
                         <BarChart data={data.formPerformance} />
                     </div>
@@ -562,47 +581,7 @@ const Analytics = () => {
                                 <p className="text-[12px] text-slate-400 font-bold mt-0.5">From views to full submissions</p>
                             </div>
                         </div>
-                        <div className="space-y-3">
-                            {dynamicFunnel.map((step, i) => (
-                                <div key={i}>
-                                    <div className="flex items-center justify-between mb-1.5">
-                                        <div className="flex items-center gap-2">
-                                            <div className={`w-2 h-2 rounded-full ${step.color}`} />
-                                            <span className="text-[13px] font-bold text-slate-700">{step.step}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-[12px] font-black text-slate-800">{step.value.toLocaleString()}</span>
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">{step.pct}%</span>
-                                        </div>
-                                    </div>
-                                    <div className="h-7 bg-slate-50 rounded-xl overflow-hidden">
-                                        <div
-                                            className={`h-full rounded-xl ${step.color} opacity-90 flex items-center justify-end pr-2 transition-all duration-700`}
-                                            style={{ width: `${step.pct}%` }}
-                                        >
-                                            {step.pct > 15 && (
-                                                <span className="text-[10px] font-black text-white/80">{step.pct}%</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    {i < dynamicFunnel.length - 1 && dynamicFunnel[i].value > 0 && (
-                                        <div className="flex justify-start pl-1 mt-1">
-                                            <span className="text-[10px] font-black text-red-400">
-                                                ↓ {100 - Math.round((dynamicFunnel[i+1].value / dynamicFunnel[i].value) * 100)}% drop-off
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                        <div className="mt-5 pt-4 border-t border-slate-50">
-                            <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider">Overall Conversion</span>
-                                <span className="text-[15px] font-black text-[#3713ec]">
-                                    {data.totalViews > 0 ? (((data.totalFull || data.totalResponses) / data.totalViews) * 100).toFixed(1) : '0'}%
-                                </span>
-                            </div>
-                        </div>
+                        <FunnelGraph data={dynamicFunnel} />
                     </div>
                 </div>
 
@@ -624,7 +603,7 @@ const Analytics = () => {
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-slate-50">
-                                    {['#', 'Form Name', 'Responses', 'Views', 'Completion', 'Trend'].map(col => (
+                                    {['#', 'Form Name', 'Responses', 'Views'].map(col => (
                                         <th key={col} className="text-left px-6 py-3.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                                             {col}
                                         </th>
@@ -643,24 +622,7 @@ const Analytics = () => {
                                             {f.label}
                                         </td>
                                         <td className="px-6 py-4 text-[14px] font-black text-slate-700">{f.responses.toLocaleString()}</td>
-                                        <td className="px-6 py-4 text-[13px] font-bold text-slate-500">{(f.responses * 1.5).toLocaleString()}</td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                                    <div
-                                                        className="h-full bg-emerald-400 rounded-full"
-                                                        style={{ width: `${f.completion}%` }}
-                                                    />
-                                                </div>
-                                                <span className="text-[12px] font-black text-slate-700">{f.completion}%</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`flex items-center gap-1 text-[12px] font-black text-emerald-600`}>
-                                                <TrendingUp size={13} />
-                                                +0%
-                                            </span>
-                                        </td>
+                                        <td className="px-6 py-4 text-[13px] font-bold text-slate-500">{f.views.toLocaleString()}</td>
                                     </tr>
                                 ))}
                             </tbody>
